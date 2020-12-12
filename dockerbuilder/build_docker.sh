@@ -1,0 +1,1 @@
+docker build -t ledger-app-builder:1.6.1-2 .
