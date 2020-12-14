@@ -58,10 +58,7 @@ if [ ! -d dev-env ]; then
     rm nanos-secure-sdk.tar.gz
     mv nanos-secure-sdk* dev-env/SDK/nanos-secure-sdk
 
-    python3 -m venv dev-env/ledger_py3
-    # source dev-env/ledger_py3/bin/activate
-    pip3 install wheel
-    pip3 install ledgerblue
+    sh ./pyenv.sh
 fi
 
 

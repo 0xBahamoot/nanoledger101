@@ -20,13 +20,13 @@ $(error Environment variable BOLOS_SDK is not set)
 endif
 include $(BOLOS_SDK)/Makefile.defines
 
-APP_LOAD_PARAMS= --curve ed25519 --path "44'/1234'" --appFlags 0x240 $(COMMON_LOAD_PARAMS)
+APP_LOAD_PARAMS= --curve secp256k1 --curve ed25519 --path "44'/587'" --appFlags 0x240 $(COMMON_LOAD_PARAMS)
 
-APPVERSION_M=1
+APPVERSION_M=0
 APPVERSION_N=0
-APPVERSION_P=0
+APPVERSION_P=1
 APPVERSION=$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
-APPNAME = "Boilerplate"
+APPNAME = "Incognito"
 
 DEFINES += $(DEFINES_LIB)
 
