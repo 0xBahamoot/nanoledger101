@@ -2,12 +2,12 @@
 #include <stdbool.h>
 #include <os.h>
 #include <os_io_seproxyhal.h>
-#include "incognito.h"
+#include "incognito_types.h"
 #include "ux.h"
 
 // handleGetVersion is the entry point for the getVersion command. It
 // unconditionally sends the app version.
-void handleGetVersion(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t dataLength, volatile unsigned int *flags, volatile unsigned int *tx)
+void handleGetVersion(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t dataLength, volatile unsigned int* flags, volatile unsigned int* tx)
 {
 	G_io_apdu_buffer[0] = APPVERSION[0] - '0';
 	G_io_apdu_buffer[1] = APPVERSION[2] - '0';
