@@ -14,16 +14,21 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 ********************************************************************************/
-
+#include "globals.h"
 #include "utils.h"
 #include "getAddress.h"
+#include "getPrivate.h"
 #include "menu.h"
+#include "key.h"
 
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
 #define CLA 0xE0
 #define INS_GET_APP_VERSION 0x01
 #define INS_GET_ADDR 0x02
+#define INS_GET_PRIV 0x03
+#define INS_IMPORT_PRIV 0x04
+
 
 #define OFFSET_CLA 0
 #define OFFSET_INS 1
@@ -54,7 +59,12 @@ void handleApdu(volatile unsigned int* flags, volatile unsigned int* tx) {
                 case INS_GET_ADDR:
                     handleGetAddress(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
                     break;
-
+                case INS_GET_PRIV:
+                    handleGetPrivate(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
+                    break;
+                case INS_IMPORT_PRIV:
+                    THROW(0x6D00);
+                    break;
                 default:
                     THROW(0x6D00);
                     break;
@@ -161,6 +171,10 @@ void io_seproxyhal_display(const bagl_element_t* element) {
 }
 
 unsigned char io_event(unsigned char channel) {
+    unsigned int s_before;
+    unsigned int s_after;
+
+    s_before = os_global_pin_is_validated();
     // nothing done with the event, throw an error on the transport layer if
     // needed
 
@@ -207,6 +221,18 @@ unsigned char io_event(unsigned char channel) {
     // close the event if not done previously (by a display or whatever)
     if (!io_seproxyhal_spi_is_status_sent()) {
         io_seproxyhal_general_status();
+    }
+
+    s_after = os_global_pin_is_validated();
+
+    if (s_before != s_after) {
+        if (s_after == PIN_VERIFIED) {
+            incognito_init_private_key();
+        }
+        else {
+            ;  // do nothing, allowing TX parsing in lock mode
+            // monero_wipe_private_key();
+        }
     }
 
     // command has been processed, DO NOT reset the current APDU transport
@@ -258,13 +284,17 @@ void app_exit(void) {
 void nv_app_state_init() {
     if (N_storage.initialized != 0x01) {
         internalStorage_t storage;
-        storage.dummy_setting_1 = 0x00;
-        storage.dummy_setting_2 = 0x00;
+        storage.setting_1 = 0x00;
+        storage.setting_2 = 0x00;
+        storage.setting_3 = 0x00;
+        storage.setting_4 = 0x00;
         storage.initialized = 0x01;
         nvm_write((internalStorage_t*)&N_storage, (void*)&storage, sizeof(internalStorage_t));
     }
-    dummy_setting_1 = N_storage.dummy_setting_1;
-    dummy_setting_2 = N_storage.dummy_setting_2;
+    setting_1 = N_storage.setting_1;
+    setting_2 = N_storage.setting_2;
+    setting_3 = N_storage.setting_3;
+    setting_4 = N_storage.setting_4;
 }
 
 __attribute__((section(".boot"))) int main(void) {

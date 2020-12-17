@@ -1,12 +1,30 @@
+/*****************************************************************************
+ *   Ledger Monero App.
+ *   (c) 2017-2020 Cedric Mesnil <cslashm@gmail.com>, Ledger SAS.
+ *   (c) 2020 Ledger SAS.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *****************************************************************************/
+
 #include "os.h"
 #include "cx.h"
-#include "incognito_types.h"
-#include "incognito_api.h"
-#include "incognito_vars.h"
 
-/* ----------------------------------------------------------------------- */
-/* ---                                                                 --- */
-/* ----------------------------------------------------------------------- */
+#include "globals.h"
+#include "crypto.h"
+
+ /* ----------------------------------------------------------------------- */
+ /* ---                                                                 --- */
+ /* ----------------------------------------------------------------------- */
 static unsigned char const WIDE C_ED25519_G[] = {
     // uncompressed
     0x04,
@@ -150,7 +168,60 @@ int incognito_hash(unsigned int algo, cx_hash_t* hasher, unsigned char* buf, uns
     return cx_hash(hasher, CX_LAST, buf, len, out, 32);
 }
 
-// A = 486662
+/* ----------------------------------------------------------------------- */
+/* ---                                                                 --- */
+/* ----------------------------------------------------------------------- */
+/* thanks to knaccc and incognitomoo help on IRC #incognito-research-lab */
+/* From Monero code
+ *
+ *  fe_sq2(v, u);            // 2 * u^2
+ *  fe_1(w);
+ *  fe_add(w, v, w);         // w = 2 * u^2 + 1
+ *  fe_sq(x, w);             // w^2
+ *  fe_mul(y, fe_ma2, v);    // -2 * A^2 * u^2
+ *  fe_add(x, x, y);         // x = w^2 - 2 * A^2 * u^2
+ *  fe_divpowm1(r->X, w, x); // (w / x)^(m + 1)
+ *  fe_sq(y, r->X);
+ *  fe_mul(x, y, x);
+ *  fe_sub(y, w, x);
+ *  fe_copy(z, fe_ma);
+ *  if (fe_isnonzero(y)) {
+ *    fe_add(y, w, x);
+ *    if (fe_isnonzero(y)) {
+ *      goto negative;
+ *    } else {
+ *      fe_mul(r->X, r->X, fe_fffb1);
+ *    }
+ *  } else {
+ *    fe_mul(r->X, r->X, fe_fffb2);
+ *  }
+ *  fe_mul(r->X, r->X, u);  // u * sqrt(2 * A * (A + 2) * w / x)
+ *  fe_mul(z, z, v);        // -2 * A * u^2
+ *  sign = 0;
+ *  goto setsign;
+ *negative:
+ *  fe_mul(x, x, fe_sqrtm1);
+ *  fe_sub(y, w, x);
+ *  if (fe_isnonzero(y)) {
+ *    assert((fe_add(y, w, x), !fe_isnonzero(y)));
+ *    fe_mul(r->X, r->X, fe_fffb3);
+ *  } else {
+ *    fe_mul(r->X, r->X, fe_fffb4);
+ *  }
+ *  // r->X = sqrt(A * (A + 2) * w / x)
+ *  // z = -A
+ *  sign = 1;
+ *setsign:
+ *  if (fe_isnegative(r->X) != sign) {
+ *    assert(fe_isnonzero(r->X));
+ *    fe_neg(r->X, r->X);
+ *  }
+ *  fe_add(r->Z, z, w);
+ *  fe_sub(r->Y, z, w);
+ *  fe_mul(r->X, r->X, r->Z);
+ */
+
+ // A = 486662
 const unsigned char C_fe_ma2[] = {
     /* -A^2
      *  0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffc8db3de3c9
@@ -225,15 +296,15 @@ void incognito_ge_fromfe_frombytes(unsigned char* ge, unsigned char* bytes) {
 
 #define Pxy uv._Pxy
 #else
-#define u  (G_incognito_vstate.io_buffer + 0 * 32)
-#define v  (G_incognito_vstate.io_buffer + 1 * 32)
-#define w  (G_incognito_vstate.io_buffer + 2 * 32)
-#define x  (G_incognito_vstate.io_buffer + 3 * 32)
-#define y  (G_incognito_vstate.io_buffer + 4 * 32)
-#define z  (G_incognito_vstate.io_buffer + 5 * 32)
-#define rX (G_incognito_vstate.io_buffer + 6 * 32)
-#define rY (G_incognito_vstate.io_buffer + 7 * 32)
-#define rZ (G_incognito_vstate.io_buffer + 8 * 32)
+#define u  (G_io_state_t.io_buffer + 0 * 32)
+#define v  (G_io_state_t.io_buffer + 1 * 32)
+#define w  (G_io_state_t.io_buffer + 2 * 32)
+#define x  (G_io_state_t.io_buffer + 3 * 32)
+#define y  (G_io_state_t.io_buffer + 4 * 32)
+#define z  (G_io_state_t.io_buffer + 5 * 32)
+#define rX (G_io_state_t.io_buffer + 6 * 32)
+#define rY (G_io_state_t.io_buffer + 7 * 32)
+#define rZ (G_io_state_t.io_buffer + 8 * 32)
 
     //#define uv7 (G_incognito_vstate.io_buffer+9*32)
     //#define v3  (G_incognito_vstate.io_buffer+10*32)
@@ -474,11 +545,11 @@ void incognito_derive_subaddress_public_key(unsigned char* x, unsigned char* pub
 /* ----------------------------------------------------------------------- */
 void incognito_get_subaddress_spend_public_key(unsigned char* x, unsigned char* index) {
     // m = Hs(a || index_major || index_minor)
-    incognito_get_subaddress_secret_key(x, G_incognito_vstate.a, index);
+    incognito_get_subaddress_secret_key(x, G_crypto_state_t.a, index);
     // M = m*G
     incognito_secret_key_to_public_key(x, x);
     // D = B + M
-    incognito_ecadd(x, x, G_incognito_vstate.B);
+    incognito_ecadd(x, x, G_crypto_state_t.B);
 }
 
 /* ----------------------------------------------------------------------- */
@@ -488,7 +559,7 @@ void incognito_get_subaddress(unsigned char* C, unsigned char* D, unsigned char*
     // retrieve D
     incognito_get_subaddress_spend_public_key(D, index);
     // C = a*D
-    incognito_ecmul_k(C, D, G_incognito_vstate.a);
+    incognito_ecmul_k(C, D, G_crypto_state_t.a);
 }
 
 /* ----------------------------------------------------------------------- */
@@ -496,8 +567,7 @@ void incognito_get_subaddress(unsigned char* C, unsigned char* D, unsigned char*
 /* ----------------------------------------------------------------------- */
 static const char C_sub_address_prefix[] = { 'S', 'u', 'b', 'A', 'd', 'd', 'r', 0 };
 
-void incognito_get_subaddress_secret_key(unsigned char* sub_s, unsigned char* s,
-    unsigned char* index) {
+void incognito_get_subaddress_secret_key(unsigned char* sub_s, unsigned char* s, unsigned char* index) {
     unsigned char in[sizeof(C_sub_address_prefix) + 32 + 8];
 
     os_memmove(in, C_sub_address_prefix, sizeof(C_sub_address_prefix)),

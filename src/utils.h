@@ -1,9 +1,9 @@
-#include "os.h"
-#include "cx.h"
-#include "globals.h"
 
 #ifndef _UTILS_H_
 #define _UTILS_H_
+#include "os.h"
+#include "cx.h"
+#include "globals.h"
 
 typedef enum rlpTxType {
     TX_LENGTH = 0,

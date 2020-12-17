@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "utils.h"
 #include "menu.h"
+#include "crypto.h"
 
 #define ACCOUNT_ADDRESS_PREFIX 1
 
@@ -84,6 +85,36 @@ void getPublicKey(uint32_t accountNumber, uint8_t* publicKeyArray) {
     if ((publicKey.W[32] & 1) != 0) {
         publicKeyArray[31] |= 0x80;
     }
+
+    // unsigned char data[72 + 8];
+    // unsigned int offset;
+    // unsigned int prefix;
+    // prefix = 53;
+
+    // offset = monero_encode_varint(data, 8, prefix);
+
+    // os_memmove(data + offset, spend, 32);
+    // os_memmove(data + offset + 32, view, 32);
+    // offset += 64;
+    // monero_keccak_F(data, offset, G_monero_vstate.mlsagH);
+    // os_memmove(data + offset, G_monero_vstate.mlsagH, 4);
+    // offset += 4;
+
+    // unsigned int full_block_count = (offset) / FULL_BLOCK_SIZE;
+    // unsigned int last_block_size = (offset) % FULL_BLOCK_SIZE;
+    // for (size_t i = 0; i < full_block_count; ++i) {
+    //     encode_block(data + i * FULL_BLOCK_SIZE, FULL_BLOCK_SIZE,
+    //         &str_b58[i * FULL_ENCODED_BLOCK_SIZE]);
+    // }
+
+    // if (0 < last_block_size) {
+    //     encode_block(data + full_block_count * FULL_BLOCK_SIZE, last_block_size,
+    //         &str_b58[full_block_count * FULL_ENCODED_BLOCK_SIZE]);
+    // }
+
+    // str_b58[ADDR_LEN] = '\0';
+
+    // return 0;
 }
 
 uint32_t readUint32BE(uint8_t* buffer) {
@@ -103,12 +134,27 @@ static const uint32_t derivePath[BIP32_PATH] = {
 void getPrivateKey(uint32_t accountNumber, cx_ecfp_private_key_t* privateKey) {
     uint8_t privateKeyData[32];
     uint32_t bip32Path[BIP32_PATH];
+    unsigned char seed[32];
+    unsigned char chain[32];
 
     os_memmove(bip32Path, derivePath, sizeof(derivePath));
     bip32Path[2] = accountNumber | HARDENED_OFFSET;
-    PRINTF("BIP32: %.*H\n", BIP32_PATH * 4, bip32Path);
-    os_perso_derive_node_bip32_seed_key(HDW_ED25519_SLIP10, CX_CURVE_Ed25519, bip32Path, BIP32_PATH, privateKeyData, NULL, NULL, 0);
-    cx_ecfp_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, privateKey);
+    // PRINTF("BIP32: %.*H\n", BIP32_PATH * 4, bip32Path);
+    // os_perso_derive_node_bip32_seed_key(HDW_ED25519_SLIP10, CX_CURVE_Ed25519, bip32Path, BIP32_PATH, privateKeyData, NULL, NULL, 0);
+    // cx_ecfp_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, privateKey);
+    os_perso_derive_node_bip32(CX_CURVE_Ed25519, bip32Path, 5, seed, chain);
+
+    incognito_keccak_F(seed, 32, G_crypto_state_t.b);
+    incognito_reduce(G_crypto_state_t.b, G_crypto_state_t.b);
+    incognito_keccak_F(G_crypto_state_t.b, 32, G_crypto_state_t.a);
+    incognito_reduce(G_crypto_state_t.a, G_crypto_state_t.a);
+
+    incognito_ecmul_G(G_crypto_state_t.A, G_crypto_state_t.a);
+    incognito_ecmul_G(G_crypto_state_t.B, G_crypto_state_t.b);
+
+    // generate key protection
+    incognito_aes_derive(&G_crypto_state_t.spk, chain, G_crypto_state_t.a, G_crypto_state_t.b);
+
     os_memset(privateKeyData, 0, sizeof(privateKeyData));
 }
 
