@@ -2,21 +2,17 @@ package main
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"math"
 	"os"
 	"strconv"
 
 	"github.com/karalabe/hid"
-	"gitlab.com/NebulousLabs/Sia/types"
 	"lukechampine.com/flagg"
 )
 
@@ -174,11 +170,19 @@ func (n *NanoS) Exchange(cmd byte, p1, p2 byte, data []byte) (resp []byte, err e
 }
 
 const (
-	cmdGetVersion    = 0x01
-	cmdGetAddress    = 0x02
-	cmdGetPrivateKey = 0x03
-	cmdSignHash      = 0x04
-	cmdCalcTxnHash   = 0x08
+	cmdGetVersion       = 0x01
+	cmdGetAddress       = 0x02
+	cmdGetViewKey       = 0x03
+	cmdGetPrivateKey    = 0x04
+	cmdImportPrivateKey = 0x05
+	cmdGenCommitment    = 0x06
+	cmdGenOTA           = 0x07
+	cmdGenRingSig       = 0x08
+	cmdGenProof         = 0x09
+	cmdGenAssetTag      = 0x10
+	cmdKeyImage         = 0x11
+	cmdEncryptCoin      = 0x50
+	cmdDecryptCoin      = 0x51
 
 	p1First = 0x00
 	p1More  = 0x80
@@ -188,117 +192,6 @@ const (
 	p2DisplayHash    = 0x00
 	p2SignHash       = 0x01
 )
-
-func (n *NanoS) GetVersion() (version string, err error) {
-	resp, err := n.Exchange(cmdGetVersion, 0, 0, nil)
-	if err != nil {
-		return "", err
-	} else if len(resp) != 3 {
-
-		return "", errors.New("version has wrong length")
-	}
-	return fmt.Sprintf("v%d.%d.%d", resp[0], resp[1], resp[2]), nil
-}
-
-func (n *NanoS) GetPublicKey(index uint32) (pubkey [32]byte, err error) {
-	encIndex := make([]byte, 4)
-	binary.LittleEndian.PutUint32(encIndex, index)
-
-	resp, err := n.Exchange(cmdGetAddress, 0, p2DisplayPubkey, encIndex)
-	if err != nil {
-		return [32]byte{}, err
-	}
-	if copy(pubkey[:], resp) != len(pubkey) {
-		return [32]byte{}, errors.New("pubkey has wrong length")
-	}
-	return
-}
-
-func (n *NanoS) GetAddress(index uint32) (addr types.UnlockHash, err error) {
-	encIndex := make([]byte, 4)
-	binary.LittleEndian.PutUint32(encIndex, index)
-
-	resp, err := n.Exchange(cmdGetAddress, 0, p2DisplayAddress, encIndex)
-	if err != nil {
-		return types.UnlockHash{}, err
-	}
-	fmt.Println(string(resp))
-	err = addr.LoadString(string(resp[32:]))
-	return
-}
-
-func (n *NanoS) GetPrivateKey(index uint32) (addr types.UnlockHash, err error) {
-	encIndex := make([]byte, 4)
-	binary.LittleEndian.PutUint32(encIndex, index)
-
-	resp, err := n.Exchange(cmdGetPrivateKey, 0, p2DisplayAddress, encIndex)
-	if err != nil {
-		return types.UnlockHash{}, err
-	}
-	fmt.Println(string(resp))
-	err = addr.LoadString(string(resp[32:]))
-	return
-}
-
-func (n *NanoS) SignHash(hash [32]byte, keyIndex uint32) (sig [64]byte, err error) {
-	encIndex := make([]byte, 4)
-	binary.LittleEndian.PutUint32(encIndex, keyIndex)
-
-	resp, err := n.Exchange(cmdSignHash, 0, 0, append(encIndex, hash[:]...))
-	if err != nil {
-		return [64]byte{}, err
-	}
-	if copy(sig[:], resp) != len(sig) {
-		return [64]byte{}, errors.New("signature has wrong length")
-	}
-	return
-}
-
-func (n *NanoS) CalcTxnHash(txn types.Transaction, sigIndex uint16) (hash [32]byte, err error) {
-	buf := new(bytes.Buffer)
-	binary.Write(buf, binary.LittleEndian, uint32(0)) // keyIndex
-	binary.Write(buf, binary.LittleEndian, sigIndex)
-	txn.MarshalSia(buf)
-
-	var resp []byte
-	for buf.Len() > 0 {
-		var p1 byte = p1More
-		if resp == nil {
-			p1 = p1First
-		}
-		resp, err = n.Exchange(cmdCalcTxnHash, p1, p2DisplayHash, buf.Next(255))
-		if err != nil {
-			return [32]byte{}, err
-		}
-	}
-	if copy(hash[:], resp) != len(hash) {
-		return [32]byte{}, errors.New("hash has wrong length")
-	}
-	return
-}
-
-func (n *NanoS) SignTxn(txn types.Transaction, sigIndex uint16, keyIndex uint32) (sig [64]byte, err error) {
-	buf := new(bytes.Buffer)
-	binary.Write(buf, binary.LittleEndian, keyIndex)
-	binary.Write(buf, binary.LittleEndian, sigIndex)
-	txn.MarshalSia(buf)
-
-	var resp []byte
-	for buf.Len() > 0 {
-		var p1 byte = p1More
-		if resp == nil {
-			p1 = p1First
-		}
-		resp, err = n.Exchange(cmdCalcTxnHash, p1, p2SignHash, buf.Next(255))
-		if err != nil {
-			return [64]byte{}, err
-		}
-	}
-	if copy(sig[:], resp) != len(sig) {
-		return [64]byte{}, errors.New("signature has wrong length")
-	}
-	return
-}
 
 func OpenNanoS() (*NanoS, error) {
 	const (
@@ -397,10 +290,16 @@ func main() {
 	versionCmd := flagg.New("version", versionUsage)
 	addrCmd := flagg.New("addr", addrUsage)
 	privCmd := flagg.New("priv", addrUsage)
-	pubkeyCmd := flagg.New("pubkey", pubkeyUsage)
-	hashCmd := flagg.New("hash", hashUsage)
-	txnCmd := flagg.New("txn", txnUsage)
-	txnHash := txnCmd.Bool("sighash", false, txnHashUsage)
+	getViewKeyCmd := flagg.New("addr", addrUsage)
+	importPrivateKeyCmd := flagg.New("addr", addrUsage)
+	genCommitmentCmd := flagg.New("addr", addrUsage)
+	genOTACmd := flagg.New("addr", addrUsage)
+	genRingSigCmd := flagg.New("addr", addrUsage)
+	genProofCmd := flagg.New("addr", addrUsage)
+	genAssetTagCmd := flagg.New("addr", addrUsage)
+	genKeyImageCmd := flagg.New("addr", addrUsage)
+	encryptCoinCmd := flagg.New("addr", addrUsage)
+	decryptCoinCmd := flagg.New("addr", addrUsage)
 
 	cmd := flagg.Parse(flagg.Tree{
 		Cmd: rootCmd,
@@ -408,9 +307,16 @@ func main() {
 			{Cmd: versionCmd},
 			{Cmd: addrCmd},
 			{Cmd: privCmd},
-			{Cmd: pubkeyCmd},
-			{Cmd: hashCmd},
-			{Cmd: txnCmd},
+			{Cmd: getViewKeyCmd},
+			{Cmd: importPrivateKeyCmd},
+			{Cmd: genCommitmentCmd},
+			{Cmd: genOTACmd},
+			{Cmd: genRingSigCmd},
+			{Cmd: genProofCmd},
+			{Cmd: genAssetTagCmd},
+			{Cmd: genKeyImageCmd},
+			{Cmd: encryptCoinCmd},
+			{Cmd: decryptCoinCmd},
 		},
 	})
 	args := cmd.Args()
@@ -464,65 +370,115 @@ func main() {
 			log.Fatalln("Couldn't get address:", err)
 		}
 		fmt.Println(priv)
-	// case pubkeyCmd:
-	// 	if len(args) != 1 {
-	// 		pubkeyCmd.Usage()
-	// 		return
-	// 	}
-	// 	pubkey, err := nanos.GetPublicKey(parseIndex(args[0]))
-	// 	if err != nil {
-	// 		log.Fatalln("Couldn't get public key:", err)
-	// 	}
-	// 	pk := types.Ed25519PublicKey(pubkey)
-	// 	fmt.Println(pk.String())
-
-	case hashCmd:
-		if len(args) != 2 {
-			hashCmd.Usage()
-			return
-		}
-		var hash [32]byte
-		hashBytes, err := hex.DecodeString(args[0])
+	case getViewKeyCmd:
+		err := nanos.GetViewKey()
 		if err != nil {
-			log.Fatalln("Couldn't read hash:", err)
-		} else if len(hashBytes) != 32 {
-			log.Fatalf("Wrong hex hash length (%v, wanted 32)", len(hashBytes))
+			log.Fatalln(err)
 		}
-		copy(hash[:], hashBytes)
-
-		sig, err := nanos.SignHash(hash, parseIndex(args[1]))
+	case importPrivateKeyCmd:
+		err := nanos.ImportPrivateKey()
 		if err != nil {
-			log.Fatalln("Couldn't get signature:", err)
+			log.Fatalln(err)
 		}
-		fmt.Println(base64.StdEncoding.EncodeToString(sig[:]))
-
-	case txnCmd:
-		if (*txnHash && len(args) != 2) || (!*txnHash && len(args) != 3) {
-			txnCmd.Usage()
-			return
-		}
-		txnBytes, err := ioutil.ReadFile(args[0])
+	case genCommitmentCmd:
+		err := nanos.GenCommitment()
 		if err != nil {
-			log.Fatalln("Couldn't read transaction:", err)
+			log.Fatalln(err)
 		}
-		var txn types.Transaction
-		if err := json.Unmarshal(txnBytes, &txn); err != nil {
-			log.Fatalln("Couldn't decode transaction:", err)
+	case genOTACmd:
+		err := nanos.GenOTA()
+		if err != nil {
+			log.Fatalln(err)
 		}
-		sigIndex := uint16(parseIndex(args[1]))
+	case genRingSigCmd:
+		err := nanos.GenRingSig()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	case genProofCmd:
+		err := nanos.GenProof()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	case genAssetTagCmd:
+		err := nanos.GenAssetTag()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	case genKeyImageCmd:
+		err := nanos.GenKeyImage()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	case encryptCoinCmd:
+		err := nanos.EncryptCoin()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	case decryptCoinCmd:
+		err := nanos.DecryptCoin()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		// case pubkeyCmd:
+		// 	if len(args) != 1 {
+		// 		pubkeyCmd.Usage()
+		// 		return
+		// 	}
+		// 	pubkey, err := nanos.GetPublicKey(parseIndex(args[0]))
+		// 	if err != nil {
+		// 		log.Fatalln("Couldn't get public key:", err)
+		// 	}
+		// 	pk := types.Ed25519PublicKey(pubkey)
+		// 	fmt.Println(pk.String())
 
-		if *txnHash {
-			sighash, err := nanos.CalcTxnHash(txn, sigIndex)
-			if err != nil {
-				log.Fatalln("Couldn't get hash:", err)
-			}
-			fmt.Println(hex.EncodeToString(sighash[:]))
-		} else {
-			sig, err := nanos.SignTxn(txn, sigIndex, parseIndex(args[2]))
-			if err != nil {
-				log.Fatalln("Couldn't get signature:", err)
-			}
-			fmt.Println(base64.StdEncoding.EncodeToString(sig[:]))
-		}
+		// case hashCmd:
+		// 	if len(args) != 2 {
+		// 		hashCmd.Usage()
+		// 		return
+		// 	}
+		// 	var hash [32]byte
+		// 	hashBytes, err := hex.DecodeString(args[0])
+		// 	if err != nil {
+		// 		log.Fatalln("Couldn't read hash:", err)
+		// 	} else if len(hashBytes) != 32 {
+		// 		log.Fatalf("Wrong hex hash length (%v, wanted 32)", len(hashBytes))
+		// 	}
+		// 	copy(hash[:], hashBytes)
+
+		// 	sig, err := nanos.SignHash(hash, parseIndex(args[1]))
+		// 	if err != nil {
+		// 		log.Fatalln("Couldn't get signature:", err)
+		// 	}
+		// 	fmt.Println(base64.StdEncoding.EncodeToString(sig[:]))
+
+		// case txnCmd:
+		// 	if (*txnHash && len(args) != 2) || (!*txnHash && len(args) != 3) {
+		// 		txnCmd.Usage()
+		// 		return
+		// 	}
+		// 	txnBytes, err := ioutil.ReadFile(args[0])
+		// 	if err != nil {
+		// 		log.Fatalln("Couldn't read transaction:", err)
+		// 	}
+		// 	var txn types.Transaction
+		// 	if err := json.Unmarshal(txnBytes, &txn); err != nil {
+		// 		log.Fatalln("Couldn't decode transaction:", err)
+		// 	}
+		// 	sigIndex := uint16(parseIndex(args[1]))
+
+		// 	if *txnHash {
+		// 		sighash, err := nanos.CalcTxnHash(txn, sigIndex)
+		// 		if err != nil {
+		// 			log.Fatalln("Couldn't get hash:", err)
+		// 		}
+		// 		fmt.Println(hex.EncodeToString(sighash[:]))
+		// 	} else {
+		// 		sig, err := nanos.SignTxn(txn, sigIndex, parseIndex(args[2]))
+		// 		if err != nil {
+		// 			log.Fatalln("Couldn't get signature:", err)
+		// 		}
+		// 		fmt.Println(base64.StdEncoding.EncodeToString(sig[:]))
+		// 	}
 	}
 }

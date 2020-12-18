@@ -1,4 +1,4 @@
-#include "getAddress.h"
+#include "api_getAddress.h"
 #include "os.h"
 // #include "ux.h"
 #include "utils.h"
@@ -12,7 +12,7 @@ static uint8_t set_result_get_address() {
   os_memmove(G_io_apdu_buffer + tx, address, address_size);
   tx += address_size;
   return tx;
-}
+  }
 
 //////////////////////////////////////////////////////////////////////
 UX_STEP_NOCB(
@@ -72,4 +72,4 @@ void handleGetAddress(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t data
   // }
   ux_flow_init(0, ux_display_public_flow, NULL);
   *flags |= IO_ASYNCH_REPLY;
-}
+  }
