@@ -1,4 +1,4 @@
-#include "api_importPriv.h"
+#include "api.h"
 #include "os.h"
 #include "ux.h"
 #include "utils.h"
@@ -55,21 +55,12 @@ UX_FLOW(ux_display_priv_flow,
     FLOW_LOOP
 );
 
-void handleImportPrivate(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t dataLength, volatile unsigned int* flags, volatile unsigned int* tx) {
+void  handleImportPrivate(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t dataLength, volatile unsigned int* flags, volatile unsigned int* tx) {
     UNUSED(dataLength);
     UNUSED(p2);
     uint8_t privKey[32];
-
-    getPublicKey(readUint32BE(dataBuffer), privKey);
-    getAddressStringFromBinary(privKey, priv);
-
-    // if (p1 == P1_NON_CONFIRM) {
-    //     *tx = set_result_import_priv();
-    //     THROW(0x9000);
-    // } else {
-    //     ux_flow_init(0, ux_display_public_flow, NULL);
-    //     *flags |= IO_ASYNCH_REPLY;
-    // }
+    os_memmove(privKey, dataBuffer, 32);
+    priv[encodeBase58(privKey, 36, (unsigned char*)priv + 3, 51) + 3] = '\0';
     ux_flow_init(0, ux_display_priv_flow, NULL);
     *flags |= IO_ASYNCH_REPLY;
     }

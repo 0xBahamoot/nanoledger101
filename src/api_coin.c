@@ -1,4 +1,4 @@
-#include "api_coin.h"
+#include "api.h"
 #include "os.h"
 #include "ux.h"
 #include "utils.h"

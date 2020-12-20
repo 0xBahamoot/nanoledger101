@@ -12,21 +12,24 @@ typedef enum rlpTxType {
     TX_RECIPIENT,
     TX_AMOUNT,
     TX_FEE
-} rlpTxType;
+    } rlpTxType;
 
-unsigned int ui_prepro(const bagl_element_t *element);
+unsigned int ui_prepro(const bagl_element_t* element);
 
-void getAddressStringFromBinary(uint8_t *publicKey, char *address);
+void getAddressStringFromBinary(uint8_t* publicKey, char* address);
 
-void getPublicKey(uint32_t accountNumber, uint8_t *publicKeyArray);
+void getPublicKey(uint32_t accountNumber, uint8_t* publicKeyArray);
 
-uint32_t readUint32BE(uint8_t *buffer);
+uint32_t readUint32BE(uint8_t* buffer);
 
-void getPrivateKey(uint32_t accountNumber, cx_ecfp_private_key_t *privateKey);
+void getPrivateKey(uint32_t accountNumber, cx_ecfp_private_key_t* privateKey);
 
 void sendResponse(uint8_t tx, bool approve);
 
-    // type            userid    x    y   w    h  str rad fill      fg        bg      fid iid  txt   touchparams...       ]
+unsigned char encodeBase58(unsigned char WIDE* in, unsigned char length,
+    unsigned char* out, unsigned char maxoutlen);
+
+// type            userid    x    y   w    h  str rad fill      fg        bg      fid iid  txt   touchparams...       ]
 #define UI_BUTTONS \
     {{BAGL_RECTANGLE   , 0x00,   0,   0, 128,  32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF, 0, 0}, NULL, 0, 0, 0, NULL, NULL, NULL},\
     {{BAGL_ICON        , 0x00,   3,  12,   7,   7, 0, 0, 0        , 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_CROSS  }, NULL, 0, 0, 0, NULL, NULL, NULL },\

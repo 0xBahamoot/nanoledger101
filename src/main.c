@@ -16,8 +16,7 @@
 ********************************************************************************/
 #include "globals.h"
 #include "utils.h"
-#include "api_getAddress.h"
-#include "api_getPrivate.h"
+#include "api.h"
 #include "menu.h"
 #include "key.h"
 
@@ -39,6 +38,8 @@ unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
 #define INS_ENC_COIN 0x50
 #define INS_DEC_COIN 0x51
+
+#define INS_IMPORT_SEED 0x90
 
 
 #define OFFSET_CLA 0
@@ -74,6 +75,7 @@ void handleApdu(volatile unsigned int* flags, volatile unsigned int* tx) {
                     handleGetPrivate(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
                     break;
                 case INS_IMPORT_PRIV:
+                    handleImportPrivate(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
                     THROW(0x6D00);
                     break;
                 case INS_GET_VIEW:
@@ -101,6 +103,9 @@ void handleApdu(volatile unsigned int* flags, volatile unsigned int* tx) {
                     THROW(0x6D00);
                     break;
                 case INS_DEC_COIN:
+                    THROW(0x6D00);
+                    break;
+                case INS_IMPORT_SEED:
                     THROW(0x6D00);
                     break;
                 default:

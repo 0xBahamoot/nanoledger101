@@ -183,6 +183,7 @@ const (
 	cmdKeyImage         = 0x11
 	cmdEncryptCoin      = 0x50
 	cmdDecryptCoin      = 0x51
+	cmdImportSeed       = 0x90
 
 	p1First = 0x00
 	p1More  = 0x80
@@ -194,17 +195,17 @@ const (
 )
 
 func OpenNanoS() (*NanoS, error) {
-	const (
-		ledgerVendorID       = 0x2c97
-		ledgerNanoSProductID = 0x0001
-		//ledgerUsageID        = 0xffa0
-	)
+	// const (
+	// 	ledgerVendorID       = 0x2c97
+	// 	ledgerNanoSProductID = 0x0001
+	// 	//ledgerUsageID        = 0xffa0
+	// )
 
 	// search for Nano S
-	devices := hid.Enumerate(ledgerVendorID, ledgerNanoSProductID)
+	devices := hid.Enumerate(0, 0)
 	if len(devices) == 0 {
 		return nil, errors.New("Nano S not detected")
-	} // else if len(devices) > 1 {
+	} //else if len(devices) > 1 {
 	// 	return nil, errors.New("Unexpected error -- Is the Sia wallet app running?")
 	// }
 
