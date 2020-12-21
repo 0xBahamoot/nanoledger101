@@ -3,7 +3,7 @@
 #include "ux.h"
 #include "utils.h"
 
-static char private[FULL_ADDRESS_LENGTH];
+static char private[58];
 
 static uint8_t set_result_get_private() {
   uint8_t tx = 0;
@@ -12,7 +12,7 @@ static uint8_t set_result_get_private() {
   os_memmove(G_io_apdu_buffer + tx, private, private_size);
   tx += private_size;
   return tx;
-  }
+}
 
 //////////////////////////////////////////////////////////////////////
 UX_STEP_NOCB(
@@ -58,18 +58,16 @@ UX_FLOW(ux_display_private_flow,
 void handleGetPrivate(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t dataLength, volatile unsigned int* flags, volatile unsigned int* tx) {
   UNUSED(dataLength);
   UNUSED(p2);
-  uint8_t privateKey[32];
+  UNUSED(p1);
 
-  getPublicKey(readUint32BE(dataBuffer), privateKey);
-  getAddressStringFromBinary(privateKey, private);
+  unsigned char privateKey[32];
 
-  // if (p1 == P1_NON_CONFIRM) {
-  //     *tx = set_result_get_private();
-  //     THROW(0x9000);
-  // } else {
-  //     ux_flow_init(0, ux_display_public_flow, NULL);
-  //     *flags |= IO_ASYNCH_REPLY;
-  // }
+  os_memmove(privateKey, G_crypto_state_t.b, 32);
+
+  snprintf((char*)private, sizeof(private), "lol");
+
+  private[encodeBase58(privateKey, 32, (unsigned char*)private, 55) + 3] = '\0';
+
   ux_flow_init(0, ux_display_private_flow, NULL);
   *flags |= IO_ASYNCH_REPLY;
-  }
+}

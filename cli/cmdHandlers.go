@@ -48,12 +48,12 @@ func (n *NanoS) GetAddress(index uint32) (addr types.UnlockHash, err error) {
 	encIndex := make([]byte, 4)
 	binary.LittleEndian.PutUint32(encIndex, index)
 
-	resp, err := n.Exchange(cmdGetAddress, 0, p2DisplayAddress, encIndex)
+	resp, err := n.Exchange(cmdGetAddress, 0, 0, nil)
 	if err != nil {
 		return types.UnlockHash{}, err
 	}
-	fmt.Println(string(resp))
-	err = addr.LoadString(string(resp[32:]))
+	fmt.Printf("address %s\n", resp)
+	// fmt.Println("address:", string(resp))
 	return
 }
 
@@ -65,8 +65,8 @@ func (n *NanoS) GetPrivateKey(index uint32) (addr types.UnlockHash, err error) {
 	if err != nil {
 		return types.UnlockHash{}, err
 	}
-	fmt.Println(string(resp))
-	err = addr.LoadString(string(resp[32:]))
+	fmt.Println("privatekey:", string(resp))
+	// err = addr.LoadString(string(resp[32:]))
 	return
 }
 
@@ -75,7 +75,8 @@ func (n *NanoS) GetViewKey() error {
 	if err != nil {
 		return err
 	}
-	_ = resp
+	fmt.Printf("viewkey: %v", resp)
+	// fmt.Println("viewkey:", string(resp[:]))
 	return nil
 }
 

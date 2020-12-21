@@ -86,13 +86,13 @@ endif
 DEFINES       += HAVE_UX_FLOW
 
 # Enabling debug PRINTF
-DEBUG = 0
+DEBUG = 1
 ifneq ($(DEBUG),0)
 
         ifeq ($(TARGET_NAME),TARGET_NANOX)
                 DEFINES   += HAVE_PRINTF PRINTF=mcu_usb_printf
         else
-                DEFINES   += HAVE_PRINTF PRINTF=screen_printf
+                DEFINES += HAVE_SPRINTF HAVE_PRINTF PRINTF=screen_printf
         endif
 else
         DEFINES   += PRINTF\(...\)=

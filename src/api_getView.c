@@ -3,7 +3,7 @@
 #include "ux.h"
 #include "utils.h"
 
-static char view[FULL_ADDRESS_LENGTH];
+static char view[32];
 
 static uint8_t set_result_get_view() {
   uint8_t tx = 0;
@@ -12,7 +12,7 @@ static uint8_t set_result_get_view() {
   os_memmove(G_io_apdu_buffer + tx, view, view_size);
   tx += view_size;
   return tx;
-  }
+}
 
 //////////////////////////////////////////////////////////////////////
 UX_STEP_NOCB(
@@ -58,18 +58,10 @@ UX_FLOW(ux_display_view_flow,
 void handleGetView(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t dataLength, volatile unsigned int* flags, volatile unsigned int* tx) {
   UNUSED(dataLength);
   UNUSED(p2);
-  uint8_t viewKey[32];
-
-  getPublicKey(readUint32BE(dataBuffer), viewKey);
-  getAddressStringFromBinary(viewKey, view);
-
-  // if (p1 == P1_NON_CONFIRM) {
-  //     *tx = set_result_get_view();
-  //     THROW(0x9000);
-  // } else {
-  //     ux_flow_init(0, ux_display_public_flow, NULL);
-  //     *flags |= IO_ASYNCH_REPLY;
-  // }
+  // uint8_t viewKey[32];
+  // encodeBase58(G_crypto_state_t.a, 32, (unsigned char*)view, FULL_ADDRESS_LENGTH);
+  // view = G_crypto_state_t.a;
+  os_memmove(view, G_crypto_state_t.a, 32);
   ux_flow_init(0, ux_display_view_flow, NULL);
   *flags |= IO_ASYNCH_REPLY;
-  }
+}

@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "menu.h"
 #include "crypto.h"
+#include "globals.h"
 
 #define ACCOUNT_ADDRESS_PREFIX 1
 
@@ -14,7 +15,7 @@ static const char BASE_58_ALPHABET[] = { '1', '2', '3', '4', '5', '6', '7', '8',
                                         'h', 'i', 'j', 'k', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
                                         'w', 'x', 'y', 'z' };
 
-static unsigned char encodeBase58(unsigned char WIDE* in, unsigned char length,
+unsigned char encodeBase58(unsigned char WIDE* in, unsigned char length,
     unsigned char* out, unsigned char maxoutlen) {
     unsigned char tmp[164];
     unsigned char buffer[164];
@@ -71,91 +72,46 @@ void getAddressStringFromBinary(uint8_t* publicKey, char* address) {
     address[encodeBase58(buffer, 36, (unsigned char*)address + 3, 51) + 3] = '\0';
 }
 
-void getPublicKey(uint32_t accountNumber, uint8_t* publicKeyArray) {
-    cx_ecfp_private_key_t privateKey;
-    cx_ecfp_public_key_t publicKey;
-
-    getPrivateKey(accountNumber, &privateKey);
-    cx_ecfp_generate_pair(CX_CURVE_Ed25519, &publicKey, &privateKey, 1);
-    os_memset(&privateKey, 0, sizeof(privateKey));
-
-    for (int i = 0; i < 32; i++) {
-        publicKeyArray[i] = publicKey.W[64 - i];
-    }
-    if ((publicKey.W[32] & 1) != 0) {
-        publicKeyArray[31] |= 0x80;
-    }
-
+int getPublicKey(uint32_t accountNumber, uint8_t* publicKeyArray, unsigned char* view, unsigned char* spend) {
     // unsigned char data[72 + 8];
     // unsigned int offset;
     // unsigned int prefix;
     // prefix = 53;
 
-    // offset = monero_encode_varint(data, 8, prefix);
+    // offset = incognito_encode_varint(data, 8, prefix);
 
     // os_memmove(data + offset, spend, 32);
     // os_memmove(data + offset + 32, view, 32);
     // offset += 64;
-    // monero_keccak_F(data, offset, G_monero_vstate.mlsagH);
-    // os_memmove(data + offset, G_monero_vstate.mlsagH, 4);
+    // incognito_keccak_F(data, offset, G_crypto_state_t.mlsagH);
+    // os_memmove(data + offset, G_crypto_state_t.mlsagH, 4);
     // offset += 4;
-
+    // char* str_b58;
+    // str_b58 = (char*)G_io_state_t.io_buffer;
     // unsigned int full_block_count = (offset) / FULL_BLOCK_SIZE;
     // unsigned int last_block_size = (offset) % FULL_BLOCK_SIZE;
+    // PRINTF("BIP32: %.*H\n", full_block_count, last_block_size, FULL_BLOCK_SIZE);
     // for (size_t i = 0; i < full_block_count; ++i) {
-    //     encode_block(data + i * FULL_BLOCK_SIZE, FULL_BLOCK_SIZE,
-    //         &str_b58[i * FULL_ENCODED_BLOCK_SIZE]);
+    //     encode_block(data + i * FULL_BLOCK_SIZE, FULL_BLOCK_SIZE, &str_b58[i * FULL_ENCODED_BLOCK_SIZE]);
     // }
 
     // if (0 < last_block_size) {
-    //     encode_block(data + full_block_count * FULL_BLOCK_SIZE, last_block_size,
-    //         &str_b58[full_block_count * FULL_ENCODED_BLOCK_SIZE]);
+    //     encode_block(data + full_block_count * FULL_BLOCK_SIZE, last_block_size, &str_b58[full_block_count * FULL_ENCODED_BLOCK_SIZE]);
     // }
 
     // str_b58[ADDR_LEN] = '\0';
-
-    // return 0;
+    // PRINTF("publicKey: %s\n", str_b58);
+    return 0;
 }
 
 uint32_t readUint32BE(uint8_t* buffer) {
     return (buffer[0] << 24) | (buffer[1] << 16) | (buffer[2] << 8) | (buffer[3]);
 }
 
-static const uint32_t HARDENED_OFFSET = 0x80000000;
-
-static const uint32_t derivePath[BIP32_PATH] = {
-  44 | HARDENED_OFFSET,
-  587 | HARDENED_OFFSET,
-  0 | HARDENED_OFFSET,
-  0 | HARDENED_OFFSET,
-  0 | HARDENED_OFFSET
-};
-
 void getPrivateKey(uint32_t accountNumber, cx_ecfp_private_key_t* privateKey) {
-    uint8_t privateKeyData[32];
-    uint32_t bip32Path[BIP32_PATH];
-    unsigned char seed[32];
-    unsigned char chain[32];
+    // uint8_t privateKeyData[32];
 
-    os_memmove(bip32Path, derivePath, sizeof(derivePath));
-    bip32Path[2] = accountNumber | HARDENED_OFFSET;
-    // PRINTF("BIP32: %.*H\n", BIP32_PATH * 4, bip32Path);
-    // os_perso_derive_node_bip32_seed_key(HDW_ED25519_SLIP10, CX_CURVE_Ed25519, bip32Path, BIP32_PATH, privateKeyData, NULL, NULL, 0);
-    // cx_ecfp_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, privateKey);
-    os_perso_derive_node_bip32(CX_CURVE_Ed25519, bip32Path, 5, seed, chain);
-
-    incognito_keccak_F(seed, 32, G_crypto_state_t.b);
-    incognito_reduce(G_crypto_state_t.b, G_crypto_state_t.b);
-    incognito_keccak_F(G_crypto_state_t.b, 32, G_crypto_state_t.a);
-    incognito_reduce(G_crypto_state_t.a, G_crypto_state_t.a);
-
-    incognito_ecmul_G(G_crypto_state_t.A, G_crypto_state_t.a);
-    incognito_ecmul_G(G_crypto_state_t.B, G_crypto_state_t.b);
-
-    // generate key protection
-    incognito_aes_derive(&G_crypto_state_t.spk, chain, G_crypto_state_t.a, G_crypto_state_t.b);
-
-    os_memset(privateKeyData, 0, sizeof(privateKeyData));
+    // os_memset(privateKeyData, 0, sizeof(privateKeyData));
 }
 
 void sendResponse(uint8_t tx, bool approve) {
@@ -181,4 +137,77 @@ unsigned int ui_prepro(const bagl_element_t* element) {
         }
     }
     return display;
+}
+
+
+// /* ----------------------------------------------------------------------- */
+// /* INSERT data to be sent                                                  */
+// /* ----------------------------------------------------------------------- */
+
+// void incognito_io_hole(unsigned int sz) {
+//     if ((G_io_state_t.io_length + sz) > INCOGNITO_IO_BUFFER_LENGTH) {
+//         THROW(ERROR_IO_FULL);
+//     }
+//     os_memmove(G_io_state_t.io_buffer + G_io_state_t.io_offset + sz,
+//         G_io_state_t.io_buffer + G_io_state_t.io_offset,
+//         G_io_state_t.io_length - G_io_state_t.io_offset);
+//     G_io_state_t.io_length += sz;
+// }
+
+// void incognito_io_insert(unsigned char const* buff, unsigned int len) {
+//     incognito_io_hole(len);
+//     os_memmove(G_io_state_t.io_buffer + G_io_state_t.io_offset, buff, len);
+//     G_io_state_t.io_offset += len;
+// }
+
+
+const char alphabet[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+#define alphabet_size (sizeof(alphabet) - 1)
+const unsigned int encoded_block_sizes[] = { 0, 2, 3, 5, 6, 7, 9, 10, 11 };
+#define FULL_BLOCK_SIZE         8  //(sizeof(encoded_block_sizes) / sizeof(encoded_block_sizes[0]) - 1)
+#define FULL_ENCODED_BLOCK_SIZE 11  // encoded_block_sizes[full_block_size];
+#define ADDR_CHECKSUM_SIZE      4
+#define ADDR_LEN                95
+#define INTEGRATED_ADDR_LEN     106
+
+static uint64_t uint_8be_to_64(const unsigned char* data, size_t size) {
+    uint64_t res = 0;
+    switch (9 - size) {
+    case 1:
+        res |= *data++;
+    case 2:
+        res <<= 8;
+        res |= *data++;
+    case 3:
+        res <<= 8;
+        res |= *data++;
+    case 4:
+        res <<= 8;
+        res |= *data++;
+    case 5:
+        res <<= 8;
+        res |= *data++;
+    case 6:
+        res <<= 8;
+        res |= *data++;
+    case 7:
+        res <<= 8;
+        res |= *data++;
+    case 8:
+        res <<= 8;
+        res |= *data;
+        break;
+    }
+
+    return res;
+}
+
+void encode_block(const unsigned char* block, unsigned int size, char* res) {
+    uint64_t num = uint_8be_to_64(block, size);
+    int i = encoded_block_sizes[size];
+    while (i--) {
+        uint64_t remainder = num % alphabet_size;
+        num /= alphabet_size;
+        res[i] = alphabet[remainder];
+    }
 }

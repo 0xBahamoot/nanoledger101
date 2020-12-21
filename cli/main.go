@@ -291,16 +291,16 @@ func main() {
 	versionCmd := flagg.New("version", versionUsage)
 	addrCmd := flagg.New("addr", addrUsage)
 	privCmd := flagg.New("priv", addrUsage)
-	getViewKeyCmd := flagg.New("addr", addrUsage)
-	importPrivateKeyCmd := flagg.New("addr", addrUsage)
-	genCommitmentCmd := flagg.New("addr", addrUsage)
-	genOTACmd := flagg.New("addr", addrUsage)
-	genRingSigCmd := flagg.New("addr", addrUsage)
-	genProofCmd := flagg.New("addr", addrUsage)
-	genAssetTagCmd := flagg.New("addr", addrUsage)
-	genKeyImageCmd := flagg.New("addr", addrUsage)
-	encryptCoinCmd := flagg.New("addr", addrUsage)
-	decryptCoinCmd := flagg.New("addr", addrUsage)
+	getViewKeyCmd := flagg.New("view", addrUsage)
+	importPrivateKeyCmd := flagg.New("importpriv", addrUsage)
+	// genCommitmentCmd := flagg.New("addr", addrUsage)
+	// genOTACmd := flagg.New("addr", addrUsage)
+	// genRingSigCmd := flagg.New("addr", addrUsage)
+	// genProofCmd := flagg.New("addr", addrUsage)
+	// genAssetTagCmd := flagg.New("addr", addrUsage)
+	// genKeyImageCmd := flagg.New("addr", addrUsage)
+	// encryptCoinCmd := flagg.New("addr", addrUsage)
+	// decryptCoinCmd := flagg.New("addr", addrUsage)
 
 	cmd := flagg.Parse(flagg.Tree{
 		Cmd: rootCmd,
@@ -310,14 +310,14 @@ func main() {
 			{Cmd: privCmd},
 			{Cmd: getViewKeyCmd},
 			{Cmd: importPrivateKeyCmd},
-			{Cmd: genCommitmentCmd},
-			{Cmd: genOTACmd},
-			{Cmd: genRingSigCmd},
-			{Cmd: genProofCmd},
-			{Cmd: genAssetTagCmd},
-			{Cmd: genKeyImageCmd},
-			{Cmd: encryptCoinCmd},
-			{Cmd: decryptCoinCmd},
+			// {Cmd: genCommitmentCmd},
+			// {Cmd: genOTACmd},
+			// {Cmd: genRingSigCmd},
+			// {Cmd: genProofCmd},
+			// {Cmd: genAssetTagCmd},
+			// {Cmd: genKeyImageCmd},
+			// {Cmd: encryptCoinCmd},
+			// {Cmd: decryptCoinCmd},
 		},
 	})
 	args := cmd.Args()
@@ -381,46 +381,46 @@ func main() {
 		if err != nil {
 			log.Fatalln(err)
 		}
-	case genCommitmentCmd:
-		err := nanos.GenCommitment()
-		if err != nil {
-			log.Fatalln(err)
-		}
-	case genOTACmd:
-		err := nanos.GenOTA()
-		if err != nil {
-			log.Fatalln(err)
-		}
-	case genRingSigCmd:
-		err := nanos.GenRingSig()
-		if err != nil {
-			log.Fatalln(err)
-		}
-	case genProofCmd:
-		err := nanos.GenProof()
-		if err != nil {
-			log.Fatalln(err)
-		}
-	case genAssetTagCmd:
-		err := nanos.GenAssetTag()
-		if err != nil {
-			log.Fatalln(err)
-		}
-	case genKeyImageCmd:
-		err := nanos.GenKeyImage()
-		if err != nil {
-			log.Fatalln(err)
-		}
-	case encryptCoinCmd:
-		err := nanos.EncryptCoin()
-		if err != nil {
-			log.Fatalln(err)
-		}
-	case decryptCoinCmd:
-		err := nanos.DecryptCoin()
-		if err != nil {
-			log.Fatalln(err)
-		}
+		// case genCommitmentCmd:
+		// 	err := nanos.GenCommitment()
+		// 	if err != nil {
+		// 		log.Fatalln(err)
+		// 	}
+		// case genOTACmd:
+		// 	err := nanos.GenOTA()
+		// 	if err != nil {
+		// 		log.Fatalln(err)
+		// 	}
+		// case genRingSigCmd:
+		// 	err := nanos.GenRingSig()
+		// 	if err != nil {
+		// 		log.Fatalln(err)
+		// 	}
+		// case genProofCmd:
+		// 	err := nanos.GenProof()
+		// 	if err != nil {
+		// 		log.Fatalln(err)
+		// 	}
+		// case genAssetTagCmd:
+		// 	err := nanos.GenAssetTag()
+		// 	if err != nil {
+		// 		log.Fatalln(err)
+		// 	}
+		// case genKeyImageCmd:
+		// 	err := nanos.GenKeyImage()
+		// 	if err != nil {
+		// 		log.Fatalln(err)
+		// 	}
+		// case encryptCoinCmd:
+		// 	err := nanos.EncryptCoin()
+		// 	if err != nil {
+		// 		log.Fatalln(err)
+		// 	}
+		// case decryptCoinCmd:
+		// 	err := nanos.DecryptCoin()
+		// 	if err != nil {
+		// 		log.Fatalln(err)
+		// 	}
 		// case pubkeyCmd:
 		// 	if len(args) != 1 {
 		// 		pubkeyCmd.Usage()

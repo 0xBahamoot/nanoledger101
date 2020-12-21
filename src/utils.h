@@ -18,13 +18,15 @@ unsigned int ui_prepro(const bagl_element_t* element);
 
 void getAddressStringFromBinary(uint8_t* publicKey, char* address);
 
-void getPublicKey(uint32_t accountNumber, uint8_t* publicKeyArray);
+int getPublicKey(uint32_t accountNumber, uint8_t* publicKeyArray, unsigned char* view, unsigned char* spend);
 
 uint32_t readUint32BE(uint8_t* buffer);
 
 void getPrivateKey(uint32_t accountNumber, cx_ecfp_private_key_t* privateKey);
 
 void sendResponse(uint8_t tx, bool approve);
+
+void encode_block(const unsigned char* block, unsigned int size, char* res) ;
 
 unsigned char encodeBase58(unsigned char WIDE* in, unsigned char length,
     unsigned char* out, unsigned char maxoutlen);

@@ -36,10 +36,15 @@ extern const internalStorage_t N_storage_real;
 #define N_storage (*(volatile internalStorage_t *)PIC(&N_storage_real))
 
 struct crypto_state_s {
-   unsigned char b[32];
-    unsigned char a[32];
-    unsigned char A[32];
-    unsigned char B[32];
+    uint8_t isHDGen;
+
+    unsigned char a[32]; //private view key
+    unsigned char b[32]; //private spend key
+    unsigned char o[32]; //private OTA key
+    unsigned char A[32]; //public view key
+    unsigned char B[32]; //public spend key
+    unsigned char O[32]; //public OTA key
+
 
     /* SPK */
     cx_aes_key_t spk;
@@ -62,13 +67,14 @@ struct crypto_state_s {
 
     cx_sha256_t sha256_commitment;
     unsigned char C[32];
-
 };
 
 typedef struct crypto_state_s crypto_state_t;
 
 #define INCOGNITO_IO_BUFFER_LENGTH (300)
 struct io_state_s {
+    unsigned short io_length;
+    unsigned short io_offset;
     unsigned char io_buffer[INCOGNITO_IO_BUFFER_LENGTH];
 };
 
