@@ -52,7 +52,8 @@ func (n *NanoS) GetAddress(index uint32) (addr types.UnlockHash, err error) {
 	if err != nil {
 		return types.UnlockHash{}, err
 	}
-	fmt.Printf("address %s\n", resp)
+	fmt.Printf("address %v\n", resp[:])
+	fmt.Println("\n", string(resp[:]))
 	// fmt.Println("address:", string(resp))
 	return
 }

@@ -155,7 +155,7 @@ func (n *NanoS) Exchange(cmd byte, p1, p2 byte, data []byte) (resp []byte, err e
 		return nil, errors.New("APDU response missing status code")
 	}
 	code := binary.BigEndian.Uint16(resp[len(resp)-2:])
-	resp = resp[:len(resp)-2]
+	resp = resp[:]
 	switch code {
 	case codeSuccess:
 		err = nil
