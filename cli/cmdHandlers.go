@@ -25,6 +25,7 @@ func (n *NanoS) GetVersion() (version string, err error) {
 	if err != nil {
 		return "", err
 	} else if len(resp) != 3 {
+		fmt.Printf("%v\n", resp)
 		return "", errors.New("version has wrong length")
 	}
 	return fmt.Sprintf("v%d.%d.%d", resp[0], resp[1], resp[2]), nil

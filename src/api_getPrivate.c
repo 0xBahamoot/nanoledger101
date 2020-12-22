@@ -1,9 +1,12 @@
 #include "api.h"
 #include "os.h"
 #include "ux.h"
+#include "cx.h"
 #include "utils.h"
+#include "globals.h"
+#include "crypto.h"
 
-static char private[58];
+static char private[123];
 
 static uint8_t set_result_get_private() {
   uint8_t tx = 0;
@@ -12,7 +15,7 @@ static uint8_t set_result_get_private() {
   os_memmove(G_io_apdu_buffer + tx, private, private_size);
   tx += private_size;
   return tx;
-}
+  }
 
 //////////////////////////////////////////////////////////////////////
 UX_STEP_NOCB(
@@ -60,14 +63,29 @@ void handleGetPrivate(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t data
   UNUSED(p2);
   UNUSED(p1);
 
-  unsigned char privateKey[32];
+  unsigned char privateKey[75];
+  privateKey[0] = 0;
+  os_memmove(privateKey + 1, &G_crypto_state_t.key.depth, 1);
+  unsigned char child_number[4];
+  child_number[0] = (G_crypto_state_t.key.child_number >> 24) & 0xFF;
+  child_number[1] = (G_crypto_state_t.key.child_number >> 16) & 0xFF;
+  child_number[2] = (G_crypto_state_t.key.child_number >> 8) & 0xFF;
+  child_number[3] = G_crypto_state_t.key.child_number & 0xFF;
+  os_memmove(privateKey + 2, child_number, 4);
+  os_memmove(privateKey + 6, G_crypto_state_t.key.chain_code, 32);
+  privateKey[38] = 32;
+  os_memmove(privateKey + 39, G_crypto_state_t.key.key, 32);
 
-  os_memmove(privateKey, G_crypto_state_t.b, 32);
+  uint8_t buffer[32];
+  // cx_hash_sha256(privateKey, 71, buffer, 32);
+  incognito_keccak_F(privateKey, 71, buffer);
+  os_memmove(privateKey + 71, buffer, 4);
 
-  snprintf((char*)private, sizeof(private), "lol");
 
-  private[encodeBase58(privateKey, 32, (unsigned char*)private, 55) + 3] = '\0';
+
+
+  private[encodeBase58(privateKey, 75, (unsigned char*)private, 120) + 3] = '\0';
 
   ux_flow_init(0, ux_display_private_flow, NULL);
   *flags |= IO_ASYNCH_REPLY;
-}
+  }

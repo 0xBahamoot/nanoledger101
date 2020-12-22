@@ -4,6 +4,7 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder "./data", "/vagrant_data"
   # usb
   config.vm.provider "virtualbox" do |vb|
+    vb.customize ["modifyvm", :id, "--cpus", "4"]
     vb.customize ["modifyvm", :id, "--usb", "on"]
     vb.customize ["modifyvm", :id, "--usbehci", "on"]
   end
@@ -16,3 +17,5 @@ Vagrant.configure("2") do |config|
         # "--name", "Nano S Bootloader",
         # "--productid", "0x0001"]
   end
+
+  sudo python3 -m ledgerblue.loadApp $(APP_LOAD_PARAMS)

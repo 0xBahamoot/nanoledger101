@@ -155,7 +155,7 @@ func (n *NanoS) Exchange(cmd byte, p1, p2 byte, data []byte) (resp []byte, err e
 		return nil, errors.New("APDU response missing status code")
 	}
 	code := binary.BigEndian.Uint16(resp[len(resp)-2:])
-	resp = resp[:]
+	resp = resp[0 : len(resp)-2]
 	switch code {
 	case codeSuccess:
 		err = nil
@@ -258,28 +258,40 @@ the Sia Ledger Nano S app (if available).
 
 Generates an address using the public key with the specified index.
 `
-	pubkeyUsage = `Usage:
-	sialedger pubkey [key index]
+	privUsage          = ``
+	viewKeyUsage       = ``
+	importPrivUsage    = ``
+	genCommitmentUsage = ``
+	genOTAUsage        = ``
+	genRingSigUsage    = ``
+	genProofUsage      = ``
+	genAssetTagUsage   = ``
+	genKeyImageUsage   = ``
+	encryptCoinUsage   = ``
+	decryptCoinUsage   = ``
 
-Generates the public key with the specified index.
-`
-	hashUsage = `Usage:
-	sialedger hash [hex-encoded hash] [key index]
+// 	pubkeyUsage = `Usage:
+// 	sialedger pubkey [key index]
 
-Signs a 256-bit hash using the private key with the specified index. The hash
-must be hex-encoded.
+// Generates the public key with the specified index.
+// `
+// 	hashUsage = `Usage:
+// 	sialedger hash [hex-encoded hash] [key index]
 
-Only sign hashes you trust. In practice, it is very difficult
-to calculate a hash in a trusted manner.
-`
-	txnUsage = `Usage:
-	sialedger txn [flags] [txn.json] [sig index] [key index]
+// Signs a 256-bit hash using the private key with the specified index. The hash
+// must be hex-encoded.
 
-Calculates and signs the hash of a transaction using the private key with the
-specified key index. The CoveredFields of the specified TransactionSignature
-must set WholeTransaction = true.
-`
-	txnHashUsage = `calculate the transaction hash, but do not sign it`
+// Only sign hashes you trust. In practice, it is very difficult
+// to calculate a hash in a trusted manner.
+// `
+// 	txnUsage = `Usage:
+// 	sialedger txn [flags] [txn.json] [sig index] [key index]
+
+// Calculates and signs the hash of a transaction using the private key with the
+// specified key index. The CoveredFields of the specified TransactionSignature
+// must set WholeTransaction = true.
+// `
+// 	txnHashUsage = `calculate the transaction hash, but do not sign it`
 )
 
 func main() {
@@ -290,17 +302,17 @@ func main() {
 
 	versionCmd := flagg.New("version", versionUsage)
 	addrCmd := flagg.New("addr", addrUsage)
-	privCmd := flagg.New("priv", addrUsage)
-	getViewKeyCmd := flagg.New("view", addrUsage)
-	importPrivateKeyCmd := flagg.New("importpriv", addrUsage)
-	// genCommitmentCmd := flagg.New("addr", addrUsage)
-	// genOTACmd := flagg.New("addr", addrUsage)
-	// genRingSigCmd := flagg.New("addr", addrUsage)
-	// genProofCmd := flagg.New("addr", addrUsage)
-	// genAssetTagCmd := flagg.New("addr", addrUsage)
-	// genKeyImageCmd := flagg.New("addr", addrUsage)
-	// encryptCoinCmd := flagg.New("addr", addrUsage)
-	// decryptCoinCmd := flagg.New("addr", addrUsage)
+	privCmd := flagg.New("priv", privUsage)
+	getViewKeyCmd := flagg.New("view", viewKeyUsage)
+	importPrivateKeyCmd := flagg.New("importpriv", importPrivUsage)
+	genCommitmentCmd := flagg.New("gencommitment", genCommitmentUsage)
+	genOTACmd := flagg.New("genota", genOTAUsage)
+	genRingSigCmd := flagg.New("genringsig", genRingSigUsage)
+	genProofCmd := flagg.New("genproof", genProofUsage)
+	genAssetTagCmd := flagg.New("genassettag", genAssetTagUsage)
+	genKeyImageCmd := flagg.New("genkeyimage", genKeyImageUsage)
+	encryptCoinCmd := flagg.New("encoin", encryptCoinUsage)
+	decryptCoinCmd := flagg.New("decoin", decryptCoinUsage)
 
 	cmd := flagg.Parse(flagg.Tree{
 		Cmd: rootCmd,
@@ -310,14 +322,14 @@ func main() {
 			{Cmd: privCmd},
 			{Cmd: getViewKeyCmd},
 			{Cmd: importPrivateKeyCmd},
-			// {Cmd: genCommitmentCmd},
-			// {Cmd: genOTACmd},
-			// {Cmd: genRingSigCmd},
-			// {Cmd: genProofCmd},
-			// {Cmd: genAssetTagCmd},
-			// {Cmd: genKeyImageCmd},
-			// {Cmd: encryptCoinCmd},
-			// {Cmd: decryptCoinCmd},
+			{Cmd: genCommitmentCmd},
+			{Cmd: genOTACmd},
+			{Cmd: genRingSigCmd},
+			{Cmd: genProofCmd},
+			{Cmd: genAssetTagCmd},
+			{Cmd: genKeyImageCmd},
+			{Cmd: encryptCoinCmd},
+			{Cmd: decryptCoinCmd},
 		},
 	})
 	args := cmd.Args()
@@ -381,46 +393,46 @@ func main() {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		// case genCommitmentCmd:
-		// 	err := nanos.GenCommitment()
-		// 	if err != nil {
-		// 		log.Fatalln(err)
-		// 	}
-		// case genOTACmd:
-		// 	err := nanos.GenOTA()
-		// 	if err != nil {
-		// 		log.Fatalln(err)
-		// 	}
-		// case genRingSigCmd:
-		// 	err := nanos.GenRingSig()
-		// 	if err != nil {
-		// 		log.Fatalln(err)
-		// 	}
-		// case genProofCmd:
-		// 	err := nanos.GenProof()
-		// 	if err != nil {
-		// 		log.Fatalln(err)
-		// 	}
-		// case genAssetTagCmd:
-		// 	err := nanos.GenAssetTag()
-		// 	if err != nil {
-		// 		log.Fatalln(err)
-		// 	}
-		// case genKeyImageCmd:
-		// 	err := nanos.GenKeyImage()
-		// 	if err != nil {
-		// 		log.Fatalln(err)
-		// 	}
-		// case encryptCoinCmd:
-		// 	err := nanos.EncryptCoin()
-		// 	if err != nil {
-		// 		log.Fatalln(err)
-		// 	}
-		// case decryptCoinCmd:
-		// 	err := nanos.DecryptCoin()
-		// 	if err != nil {
-		// 		log.Fatalln(err)
-		// 	}
+	case genCommitmentCmd:
+		err := nanos.GenCommitment()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	case genOTACmd:
+		err := nanos.GenOTA()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	case genRingSigCmd:
+		err := nanos.GenRingSig()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	case genProofCmd:
+		err := nanos.GenProof()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	case genAssetTagCmd:
+		err := nanos.GenAssetTag()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	case genKeyImageCmd:
+		err := nanos.GenKeyImage()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	case encryptCoinCmd:
+		err := nanos.EncryptCoin()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	case decryptCoinCmd:
+		err := nanos.DecryptCoin()
+		if err != nil {
+			log.Fatalln(err)
+		}
 		// case pubkeyCmd:
 		// 	if len(args) != 1 {
 		// 		pubkeyCmd.Usage()

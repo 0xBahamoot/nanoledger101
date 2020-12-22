@@ -13,7 +13,7 @@ static uint8_t set_result_get_address() {
   os_memmove(G_io_apdu_buffer + tx, address, address_size);
   tx += address_size;
   return tx;
-}
+  }
 
 //////////////////////////////////////////////////////////////////////
 UX_STEP_NOCB(
@@ -65,7 +65,7 @@ void handleGetAddress(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t data
   os_memmove(publicKey, G_crypto_state_t.A, 32);
   os_memmove(publicKey + 32, G_crypto_state_t.B, 32);
 
-  snprintf((char*)address, sizeof(address), "lol");
+  // snprintf((char*)address, sizeof(address), "lol");
 
   address[encodeBase58(publicKey, 64, (unsigned char*)address, 95) + 3] = '\0';
 
@@ -88,4 +88,4 @@ void handleGetAddress(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t data
 
   ux_flow_init(0, ux_display_public_flow, NULL);
   *flags |= IO_ASYNCH_REPLY;
-}
+  }

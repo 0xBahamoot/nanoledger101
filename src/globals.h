@@ -4,6 +4,7 @@
 #include "os.h"
 #include "ux.h"
 #include "os_io_seproxyhal.h"
+#include "key.h"
 
 #define PIN_VERIFIED BOLOS_UX_OK
 #define P1_CONFIRM 0x01
@@ -21,15 +22,15 @@ extern unsigned int ux_step;
 extern unsigned int ux_step_count;
 
 typedef struct internalStorage_t
-{
+    {
     unsigned char setting_1;
     unsigned char setting_2;
     unsigned char setting_3;
     unsigned char setting_4;
-    
-    
+
+
     uint8_t initialized;
-} internalStorage_t;
+    } internalStorage_t;
 
 
 extern const internalStorage_t N_storage_real;
@@ -37,9 +38,9 @@ extern const internalStorage_t N_storage_real;
 
 struct crypto_state_s {
     uint8_t isHDGen;
-
+    privatekey_t key;
     unsigned char a[32]; //private view key
-    unsigned char b[32]; //private spend key
+    // unsigned char b[32]; //private spend key
     unsigned char o[32]; //private OTA key
     unsigned char A[32]; //public view key
     unsigned char B[32]; //public spend key
@@ -67,7 +68,7 @@ struct crypto_state_s {
 
     cx_sha256_t sha256_commitment;
     unsigned char C[32];
-};
+    };
 
 typedef struct crypto_state_s crypto_state_t;
 
@@ -76,7 +77,7 @@ struct io_state_s {
     unsigned short io_length;
     unsigned short io_offset;
     unsigned char io_buffer[INCOGNITO_IO_BUFFER_LENGTH];
-};
+    };
 
 typedef struct io_state_s io_state_t;
 extern crypto_state_t G_crypto_state_t;
