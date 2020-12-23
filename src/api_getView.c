@@ -58,9 +58,7 @@ UX_FLOW(ux_display_view_flow,
 void handleGetView(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t dataLength, volatile unsigned int* flags, volatile unsigned int* tx) {
   UNUSED(dataLength);
   UNUSED(p2);
-  // uint8_t viewKey[32];
-  // encodeBase58(G_crypto_state_t.a, 32, (unsigned char*)view, FULL_ADDRESS_LENGTH);
-  // view = G_crypto_state_t.a;
+  UNUSED(p1);
   os_memmove(view, G_crypto_state_t.a, 32);
   ux_flow_init(0, ux_display_view_flow, NULL);
   *flags |= IO_ASYNCH_REPLY;

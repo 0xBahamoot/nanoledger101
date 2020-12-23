@@ -15,7 +15,7 @@ static uint8_t set_result_get_private() {
   os_memmove(G_io_apdu_buffer + tx, private, private_size);
   tx += private_size;
   return tx;
-  }
+}
 
 //////////////////////////////////////////////////////////////////////
 UX_STEP_NOCB(
@@ -77,8 +77,14 @@ void handleGetPrivate(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t data
   os_memmove(privateKey + 39, G_crypto_state_t.key.key, 32);
 
   uint8_t buffer[32];
+  //doublesha256
+  incognito_doublesha256(privateKey, 71, buffer);
   // cx_hash_sha256(privateKey, 71, buffer, 32);
-  incognito_keccak_F(privateKey, 71, buffer);
+  // cx_hash_sha256(buffer, 32, buffer, 32);
+
+  //sha3
+  //incognito_keccak_F(privateKey, 71, buffer);
+
   os_memmove(privateKey + 71, buffer, 4);
 
 
@@ -88,4 +94,4 @@ void handleGetPrivate(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t data
 
   ux_flow_init(0, ux_display_private_flow, NULL);
   *flags |= IO_ASYNCH_REPLY;
-  }
+}

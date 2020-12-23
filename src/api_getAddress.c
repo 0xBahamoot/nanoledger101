@@ -3,8 +3,9 @@
 #include "ux.h"
 #include "utils.h"
 #include "globals.h"
+#include "crypto.h"
 
-static char address[95];
+static char address[128];
 
 static uint8_t set_result_get_address() {
   uint8_t tx = 0;
@@ -13,7 +14,7 @@ static uint8_t set_result_get_address() {
   os_memmove(G_io_apdu_buffer + tx, address, address_size);
   tx += address_size;
   return tx;
-  }
+}
 
 //////////////////////////////////////////////////////////////////////
 UX_STEP_NOCB(
@@ -60,32 +61,29 @@ void handleGetAddress(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t data
   UNUSED(dataLength);
   UNUSED(p2);
   UNUSED(p1);
-  unsigned char publicKey[64];
+  unsigned char publicKey[71];
+  publicKey[0] = 1;
+  publicKey[1] = 32;
+  os_memmove(publicKey + 2, G_crypto_state_t.B, 32);
+  publicKey[34] = 32;
+  os_memmove(publicKey + 35, G_crypto_state_t.A, 32);
+  uint8_t buffer[32];
+  // cx_hash_sha256(publicKey, 71, buffer, 32);
+  // cx_hash_sha256(buffer, 32, buffer, 32);
+ //sha3
+  incognito_keccak_F(publicKey, 67, buffer);
+  os_memmove(publicKey + 67, buffer, 4);
 
-  os_memmove(publicKey, G_crypto_state_t.A, 32);
-  os_memmove(publicKey + 32, G_crypto_state_t.B, 32);
+  unsigned char base58check[76];
+  uint8_t buffer2[32];
+  base58check[0] = 0;
+  os_memmove(base58check + 1, publicKey, 71);
+  incognito_keccak_F(base58check, 72, buffer2);
+  os_memmove(base58check + 72, buffer2, 4);
 
-  // snprintf((char*)address, sizeof(address), "lol");
+  address[encodeBase58(base58check, 76, (unsigned char*)address, 125) + 3] = '\0';
 
-  address[encodeBase58(publicKey, 64, (unsigned char*)address, 95) + 3] = '\0';
-
-  // unsigned int offset;
-  // offset = 64;
-  // unsigned int full_block_count = (offset) / FULL_BLOCK_SIZE;
-  // unsigned int last_block_size = (offset) % FULL_BLOCK_SIZE;
-
-  // for (size_t i = 0; i < full_block_count; ++i) {
-  //   encode_block(publicKey + i * FULL_BLOCK_SIZE, FULL_BLOCK_SIZE,
-  //     &address[i * FULL_ENCODED_BLOCK_SIZE]);
-  // }
-
-  // if (0 < last_block_size) {
-  //   encode_block(publicKey + full_block_count * FULL_BLOCK_SIZE, last_block_size,
-  //     &address[full_block_count * FULL_ENCODED_BLOCK_SIZE]);
-  // }
-
-  // address[95] = '\0';
 
   ux_flow_init(0, ux_display_public_flow, NULL);
   *flags |= IO_ASYNCH_REPLY;
-  }
+}

@@ -116,12 +116,16 @@ func (af *apduFramer) Exchange(apdu APDU) ([]byte, error) {
 	}
 	// read APDU payload
 	respLen := binary.BigEndian.Uint16(af.buf[:2])
-	resp := make([]byte, respLen)
-	_, err := io.ReadFull(af.hf, resp)
-	if DEBUG {
-		fmt.Println("HID =>", hex.EncodeToString(resp))
-	}
-	return resp, err
+	resp := make([]byte, respLen/2)
+	n, _ := io.ReadFull(af.hf, resp)
+	// if DEBUG {
+	fmt.Println("HID =>", n, respLen, hex.EncodeToString(resp))
+
+	resp2 := make([]byte, respLen/2)
+	n2, _ := io.ReadFull(af.hf, resp2)
+	fmt.Println("HID2 =>", n2, respLen, hex.EncodeToString(resp2))
+	// }
+	return resp, nil
 }
 
 type NanoS struct {
@@ -154,18 +158,18 @@ func (n *NanoS) Exchange(cmd byte, p1, p2 byte, data []byte) (resp []byte, err e
 	} else if len(resp) < 2 {
 		return nil, errors.New("APDU response missing status code")
 	}
-	code := binary.BigEndian.Uint16(resp[len(resp)-2:])
+	// code := binary.BigEndian.Uint16(resp[len(resp)-2:])
 	resp = resp[0 : len(resp)-2]
-	switch code {
-	case codeSuccess:
-		err = nil
-	case codeUserRejected:
-		err = errUserRejected
-	case codeInvalidParam:
-		err = errInvalidParam
-	default:
-		err = ErrCode(code)
-	}
+	// switch code {
+	// case codeSuccess:
+	// 	err = nil
+	// case codeUserRejected:
+	// 	err = errUserRejected
+	// case codeInvalidParam:
+	// 	err = errInvalidParam
+	// default:
+	// 	err = ErrCode(code)
+	// }
 	return
 }
 

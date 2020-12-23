@@ -136,4 +136,5 @@ void incognito_reduce(unsigned char* r, unsigned char* a);
 void incognito_rng_mod_order(unsigned char* r);
 
 void incognito_get_subaddress_secret_key(unsigned char* sub_s, unsigned char* s, unsigned char* index);
+void incognito_doublesha256(unsigned char* buf, unsigned int len, unsigned char* out);
 #endif

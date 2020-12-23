@@ -4,6 +4,7 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder "./data", "/vagrant_data"
   # usb
   config.vm.provider "virtualbox" do |vb|
+    vb.customize [ “modifyvm”, :id, “--uartmode1", “file”, File.join(Dir.pwd, “ubuntu-bionic-18.04-cloudimg-console.log”)]
     vb.customize ["modifyvm", :id, "--cpus", "4"]
     vb.customize ["modifyvm", :id, "--usb", "on"]
     vb.customize ["modifyvm", :id, "--usbehci", "on"]
@@ -17,5 +18,10 @@ Vagrant.configure("2") do |config|
         # "--name", "Nano S Bootloader",
         # "--productid", "0x0001"]
   end
+end
 
-  sudo python3 -m ledgerblue.loadApp $(APP_LOAD_PARAMS)
+sudo python3 -m ledgerblue.loadApp $(APP_LOAD_PARAMS)
+
+make load
+
+sudo apt-get install libusb-0.1-4

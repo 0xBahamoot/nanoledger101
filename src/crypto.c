@@ -137,7 +137,7 @@ void incognito_reverse32(unsigned char* rscal, unsigned char* scal) {
 /* ----------------------------------------------------------------------- */
 void incognito_hash_init_sha256(cx_hash_t* hasher) { cx_sha256_init((cx_sha256_t*)hasher); }
 
-void incognito_hash_init_keccak(cx_hash_t* hasher) { cx_keccak_init((cx_sha3_t*)hasher, 256); }
+void incognito_hash_init_keccak(cx_hash_t* hasher) { cx_sha3_init((cx_sha3_t*)hasher, 256); }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -163,7 +163,7 @@ int incognito_hash(unsigned int algo, cx_hash_t* hasher, unsigned char* buf, uns
         cx_sha256_init((cx_sha256_t*)hasher);
     }
     else {
-        cx_keccak_init((cx_sha3_t*)hasher, 256);
+        cx_sha3_init((cx_sha3_t*)hasher, 256);
     }
     return cx_hash(hasher, CX_LAST, buf, len, out, 32);
 }
@@ -941,4 +941,10 @@ int incognito_vamount2str(unsigned char* binary, char* str, unsigned int str_len
     uint64_t amount;
     incognito_decode_varint(binary, 8, &amount);
     return incognito_amount2str(amount, str, str_len);
+}
+
+
+void incognito_doublesha256(unsigned char* buf, unsigned int len, unsigned char* out) {
+    cx_hash_sha256(buf, len, out, 32);
+    cx_hash_sha256(out, 32, out, 32);
 }
