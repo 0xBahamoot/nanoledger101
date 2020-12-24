@@ -79,7 +79,7 @@ DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_REGULAR_11PX
 DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_EXTRABOLD_11PX
 DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_LIGHT_16PX
 else
-DEFINES   	  += IO_SEPROXYHAL_BUFFER_SIZE_B=256
+DEFINES   	  += IO_SEPROXYHAL_BUFFER_SIZE_B=128
 endif
 
 # Both nano S and X benefit from the flow.
@@ -139,7 +139,7 @@ SDK_SOURCE_PATH  += lib_ux
 endif
 
 load: all
-	python -m ledgerblue.loadApp $(APP_LOAD_PARAMS)
+	python3 -m ledgerblue.loadApp $(APP_LOAD_PARAMS)
 
 load-offline: all
 	python -m ledgerblue.loadApp $(APP_LOAD_PARAMS) --offline

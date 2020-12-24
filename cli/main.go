@@ -116,15 +116,20 @@ func (af *apduFramer) Exchange(apdu APDU) ([]byte, error) {
 	}
 	// read APDU payload
 	respLen := binary.BigEndian.Uint16(af.buf[:2])
-	resp := make([]byte, respLen/2)
+	resp := make([]byte, respLen)
 	n, _ := io.ReadFull(af.hf, resp)
 	// if DEBUG {
-	fmt.Println("HID =>", n, respLen, hex.EncodeToString(resp))
-
-	resp2 := make([]byte, respLen/2)
-	n2, _ := io.ReadFull(af.hf, resp2)
-	fmt.Println("HID2 =>", n2, respLen, hex.EncodeToString(resp2))
+	fmt.Println("HID =>", respLen, n, hex.EncodeToString(resp))
 	// }
+
+	// if _, err := io.ReadFull(af.hf, af.buf[:]); err != nil {
+	// 	return nil, err
+	// }
+	// respLen2 := binary.BigEndian.Uint16(af.buf[:2])
+	// resp2 := make([]byte, respLen2)
+	// _, _ = io.ReadFull(af.hf, resp2)
+	// fmt.Println("HID2 =>", respLen2, hex.EncodeToString(resp2))
+
 	return resp, nil
 }
 

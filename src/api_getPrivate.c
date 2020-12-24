@@ -6,7 +6,7 @@
 #include "globals.h"
 #include "crypto.h"
 
-static char private[123];
+unsigned char private[123];
 
 static uint8_t set_result_get_private() {
   uint8_t tx = 0;
@@ -78,12 +78,10 @@ void handleGetPrivate(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t data
 
   uint8_t buffer[32];
   //doublesha256
-  incognito_doublesha256(privateKey, 71, buffer);
-  // cx_hash_sha256(privateKey, 71, buffer, 32);
-  // cx_hash_sha256(buffer, 32, buffer, 32);
+  // incognito_doublesha256(privateKey, 71, buffer);
 
   //sha3
-  //incognito_keccak_F(privateKey, 71, buffer);
+  incognito_keccak_F(privateKey, 71, buffer);
 
   os_memmove(privateKey + 71, buffer, 4);
 
