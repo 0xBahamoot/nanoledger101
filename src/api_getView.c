@@ -3,16 +3,17 @@
 #include "ux.h"
 #include "utils.h"
 
-static char view[32];
+// static char view[32];
 
 static uint8_t set_result_get_view() {
   uint8_t tx = 0;
-  const uint8_t view_size = strlen(view);
-  G_io_apdu_buffer[tx++] = view_size;
-  os_memmove(G_io_apdu_buffer + tx, view, view_size);
+  const uint8_t view_size = strlen(processData);
+  // G_io_apdu_buffer[tx++] = view_size;
+  os_memmove(G_io_apdu_buffer + tx, processData, view_size);
   tx += view_size;
+  os_memset(processData, 0, sizeof(processData));
   return tx;
-}
+  }
 
 //////////////////////////////////////////////////////////////////////
 UX_STEP_NOCB(
@@ -28,7 +29,7 @@ UX_STEP_NOCB(
   bnnn_paging,
   {
     .title = "Viewkey",
-    .text = view,
+    .text = processData,
   });
 UX_STEP_VALID(
   ux_display_view_flow_3_step,
@@ -59,7 +60,8 @@ void handleGetView(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t dataLen
   UNUSED(dataLength);
   UNUSED(p2);
   UNUSED(p1);
-  os_memmove(view, G_crypto_state_t.a, 32);
+  os_memmove(processData, G_crypto_state_t.a, 32);
+  processData[33] = '\0';
   ux_flow_init(0, ux_display_view_flow, NULL);
   *flags |= IO_ASYNCH_REPLY;
-}
+  }

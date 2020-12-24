@@ -4,15 +4,21 @@
 #include "utils.h"
 #include "globals.h"
 #include "crypto.h"
+#include "menu.h"
+#include "io.h"
 
-static char address[123];
+// static char address[123];
 static uint8_t set_result_get_address() {
   uint8_t tx = 0;
-  const uint8_t address_size = strlen(address);
-  os_memmove(G_io_apdu_buffer + tx, address, address_size);
+  const uint8_t address_size = strlen(processData);
+  // G_io_apdu_buffer[tx++] = address_size;
+  os_memmove(G_io_apdu_buffer + tx, processData, address_size);
   tx += address_size;
+
+  os_memset(processData, 0, sizeof(processData));
   return tx;
-}
+
+  }
 
 //////////////////////////////////////////////////////////////////////
 UX_STEP_NOCB(
@@ -20,7 +26,7 @@ UX_STEP_NOCB(
   pnn,
   {
     &C_icon_warning,
-    "Retrieving",
+    "Export",
     "Address?",
   });
 UX_STEP_NOCB(
@@ -28,12 +34,13 @@ UX_STEP_NOCB(
   bnnn_paging,
   {
     .title = "PaymentAddress",
-    .text = address,
+    .text = processData,
   });
 UX_STEP_VALID(
   ux_display_public_flow_3_step,
   pb,
   sendResponse(set_result_get_address(), true),
+  // set_result_get_address(),
   {
     &C_icon_validate_14,
     "Approve",
@@ -59,29 +66,28 @@ void handleGetAddress(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t data
   UNUSED(dataLength);
   UNUSED(p2);
   UNUSED(p1);
-  address[0] = 1;
-  address[1] = 32;
-  os_memmove(address + 2, G_crypto_state_t.B, 32);
-  address[34] = 32;
-  os_memmove(address + 35, G_crypto_state_t.A, 32);
+  processData[0] = 1;
+  processData[1] = 32;
+  os_memmove(processData + 2, G_crypto_state_t.B, 32);
+  processData[34] = 32;
+  os_memmove(processData + 35, G_crypto_state_t.A, 32);
 
 
   uint8_t buffer[32];
   //sha3
-  incognito_keccak_F(address, 67, buffer);
-  os_memmove(address + 67, buffer, 4);
+  incognito_keccak_F(processData, 67, buffer);
+  os_memmove(processData + 67, buffer, 4);
 
   unsigned char base58check[76];
-  // uint8_t buffer2[32];
   os_memset(buffer, 0, 32);
   base58check[0] = 0;
-  os_memmove(base58check + 1, address, 71);
+  os_memmove(base58check + 1, processData, 71);
   incognito_keccak_F(base58check, 72, buffer);
   os_memmove(base58check + 72, buffer, 4);
-  os_memset(address, 0, 32);
+  os_memset(processData, 0, sizeof(processData));
 
-  address[encodeBase58(base58check, 76, (unsigned char*)address, 120) + 3] = '\0';
+  processData[encodeBase58(base58check, 76, (unsigned char*)processData, 120) + 3] = '\0';
 
   ux_flow_init(0, ux_display_public_flow, NULL);
   *flags |= IO_ASYNCH_REPLY;
-}
+  }

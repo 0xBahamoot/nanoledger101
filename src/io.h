@@ -5,5 +5,7 @@
 #include "globals.h"
 
 
+void incognito_io_clean();
+void incognito_io_send(unsigned int io_flags);
 
 #endif
