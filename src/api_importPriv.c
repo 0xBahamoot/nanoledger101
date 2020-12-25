@@ -73,11 +73,7 @@ void  handleImportPrivate(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t 
 
   // processData[dataLength] = '\0';
   // uint32_t num;
-  // num = (uint32_t)buffer[0] << 24 |
-  //     (uint32_t)buffer[1] << 16 |
-  //     (uint32_t)buffer[2] << 8  |
-  //     (uint32_t)buffer[3];
-
+  G_crypto_state_t.key.child_number = (processData[2] << 24) | (processData[3] << 16) | (processData[4] << 8) | (processData[5]);
 
 
 
