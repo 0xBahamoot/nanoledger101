@@ -178,31 +178,6 @@ func (n *NanoS) Exchange(cmd byte, p1, p2 byte, data []byte) (resp []byte, err e
 	return
 }
 
-const (
-	cmdGetVersion       = 0x01
-	cmdGetAddress       = 0x02
-	cmdGetViewKey       = 0x03
-	cmdGetPrivateKey    = 0x04
-	cmdImportPrivateKey = 0x05
-	cmdGenCommitment    = 0x06
-	cmdGenOTA           = 0x07
-	cmdGenRingSig       = 0x08
-	cmdGenProof         = 0x09
-	cmdGenAssetTag      = 0x10
-	cmdKeyImage         = 0x11
-	cmdEncryptCoin      = 0x50
-	cmdDecryptCoin      = 0x51
-	cmdImportSeed       = 0x90
-
-	p1First = 0x00
-	p1More  = 0x80
-
-	p2DisplayAddress = 0x00
-	p2DisplayPubkey  = 0x01
-	p2DisplayHash    = 0x00
-	p2SignHash       = 0x01
-)
-
 func OpenNanoS() (*NanoS, error) {
 	// const (
 	// 	ledgerVendorID       = 0x2c97

@@ -16,6 +16,15 @@ int incognito_hash_final(cx_hash_t* hasher, unsigned char* out);
 int incognito_hash(unsigned int algo, cx_hash_t* hasher, unsigned char* buf, unsigned int len,
     unsigned char* out);
 
+
+#define incognito_sha3_init() incognito_hash_init_sha3((cx_hash_t *)&G_crypto_state_t.keccakF)
+#define incognito_sha3_update(buf, len) \
+    incognito_hash_update((cx_hash_t *)&G_crypto_state_t.keccakF, (buf), (len))
+#define incognito_sha3_final(out) incognito_hash_final((cx_hash_t *)&G_crypto_state_t.keccakF, (out))
+#define incognito_sha3(buf, len, out) \
+    incognito_hash(CX_SHA3, (cx_hash_t *)&G_crypto_state_t.keccakF, (buf), (len), (out))
+
+
 #define incognito_keccak_init_F() incognito_hash_init_keccak((cx_hash_t *)&G_crypto_state_t.keccakF)
 #define incognito_keccak_update_F(buf, len) \
     incognito_hash_update((cx_hash_t *)&G_crypto_state_t.keccakF, (buf), (len))
@@ -137,4 +146,5 @@ void incognito_rng_mod_order(unsigned char* r);
 
 void incognito_get_subaddress_secret_key(unsigned char* sub_s, unsigned char* s, unsigned char* index);
 void incognito_doublesha256(unsigned char* buf, unsigned int len, unsigned char* out);
+void incognito_add_B58checksum(unsigned char *preEncode,unsigned int len, unsigned char* buf);
 #endif

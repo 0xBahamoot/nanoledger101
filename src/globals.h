@@ -20,7 +20,7 @@ extern ux_state_t ux;
 // display stepped screens
 extern unsigned int ux_step;
 extern unsigned int ux_step_count;
-extern unsigned char processData[128];
+extern unsigned char processData[256];
 
 typedef struct internalStorage_t
     {
@@ -44,8 +44,8 @@ struct crypto_state_s {
     unsigned char a[32]; //private view key
 
     // unsigned char b[32]; //private spend key
-    unsigned char o[32]; //private OTA key
-    unsigned char O[32]; //public OTA key
+    // unsigned char o[32]; //private OTA key
+    // unsigned char O[32]; //public OTA key
 
     unsigned char A[32]; //public view key/transmission key
     unsigned char B[32]; //public spend key
@@ -60,6 +60,7 @@ struct crypto_state_s {
     /* prefix/mlsag hash */
     cx_sha3_t keccakF;
     cx_sha3_t keccakH;
+    // cx_sha3_t sha3;
     unsigned char prefixH[32];
     unsigned char mlsagH[32];
     unsigned char c[32];
@@ -75,13 +76,13 @@ struct crypto_state_s {
 typedef struct crypto_state_s crypto_state_t;
 
 #define INCOGNITO_IO_BUFFER_LENGTH (300)
-struct io_state_s {
-    unsigned short io_length;
-    unsigned short io_offset;
-    unsigned char io_buffer[INCOGNITO_IO_BUFFER_LENGTH];
-    };
+// struct io_state_s {
+//     unsigned short io_length;
+//     unsigned short io_offset;
+//     unsigned char io_buffer[INCOGNITO_IO_BUFFER_LENGTH];
+//     };
 
-typedef struct io_state_s io_state_t;
+// typedef struct io_state_s io_state_t;
 extern crypto_state_t G_crypto_state_t;
-extern  io_state_t G_io_state_t;
+// extern  io_state_t G_io_state_t;
 #endif

@@ -213,10 +213,10 @@ void io_seproxyhal_display(const bagl_element_t* element) {
 }
 
 unsigned char io_event(unsigned char channel) {
-    unsigned int s_before;
-    unsigned int s_after;
+    // unsigned int s_before;
+    // unsigned int s_after;
 
-    s_before = os_global_pin_is_validated();
+    // s_before = os_global_pin_is_validated();
     // nothing done with the event, throw an error on the transport layer if
     // needed
 

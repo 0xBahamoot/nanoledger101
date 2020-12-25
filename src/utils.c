@@ -59,59 +59,8 @@ unsigned char encodeBase58(unsigned char WIDE* in, unsigned char length,
     return length;
 }
 
-void getAddressStringFromBinary(uint8_t* publicKey, char* address) {
-    uint8_t buffer[36];
-    uint8_t hashAddress[32];
-
-    os_memmove(buffer, publicKey, 32);
-    cx_hash_sha256(buffer, 32, hashAddress, 32);
-    cx_hash_sha256(hashAddress, 32, hashAddress, 32);
-    os_memmove(buffer + 32, hashAddress, 4);
-
-    snprintf(address, sizeof(address), "lol");
-    address[encodeBase58(buffer, 36, (unsigned char*)address + 3, 51) + 3] = '\0';
-}
-
-int getPublicKey(uint32_t accountNumber, uint8_t* publicKeyArray, unsigned char* view, unsigned char* spend) {
-    // unsigned char data[72 + 8];
-    // unsigned int offset;
-    // unsigned int prefix;
-    // prefix = 53;
-
-    // offset = incognito_encode_varint(data, 8, prefix);
-
-    // os_memmove(data + offset, spend, 32);
-    // os_memmove(data + offset + 32, view, 32);
-    // offset += 64;
-    // incognito_keccak_F(data, offset, G_crypto_state_t.mlsagH);
-    // os_memmove(data + offset, G_crypto_state_t.mlsagH, 4);
-    // offset += 4;
-    // char* str_b58;
-    // str_b58 = (char*)G_io_state_t.io_buffer;
-    // unsigned int full_block_count = (offset) / FULL_BLOCK_SIZE;
-    // unsigned int last_block_size = (offset) % FULL_BLOCK_SIZE;
-    // PRINTF("BIP32: %.*H\n", full_block_count, last_block_size, FULL_BLOCK_SIZE);
-    // for (size_t i = 0; i < full_block_count; ++i) {
-    //     encode_block(data + i * FULL_BLOCK_SIZE, FULL_BLOCK_SIZE, &str_b58[i * FULL_ENCODED_BLOCK_SIZE]);
-    // }
-
-    // if (0 < last_block_size) {
-    //     encode_block(data + full_block_count * FULL_BLOCK_SIZE, last_block_size, &str_b58[full_block_count * FULL_ENCODED_BLOCK_SIZE]);
-    // }
-
-    // str_b58[ADDR_LEN] = '\0';
-    // PRINTF("publicKey: %s\n", str_b58);
-    return 0;
-}
-
 uint32_t readUint32BE(uint8_t* buffer) {
     return (buffer[0] << 24) | (buffer[1] << 16) | (buffer[2] << 8) | (buffer[3]);
-}
-
-void getPrivateKey(uint32_t accountNumber, cx_ecfp_private_key_t* privateKey) {
-    // uint8_t privateKeyData[32];
-
-    // os_memset(privateKeyData, 0, sizeof(privateKeyData));
 }
 
 void sendResponse(uint8_t tx, bool approve) {

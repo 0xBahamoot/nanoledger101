@@ -137,7 +137,9 @@ void incognito_reverse32(unsigned char* rscal, unsigned char* scal) {
 /* ----------------------------------------------------------------------- */
 void incognito_hash_init_sha256(cx_hash_t* hasher) { cx_sha256_init((cx_sha256_t*)hasher); }
 
-void incognito_hash_init_keccak(cx_hash_t* hasher) { cx_sha3_init((cx_sha3_t*)hasher, 256); }
+void incognito_hash_init_keccak(cx_hash_t* hasher) { cx_keccak_init((cx_sha3_t*)hasher, 256); }
+
+void incognito_hash_init_sha3(cx_hash_t* hasher) { cx_sha3_init((cx_sha3_t*)hasher, 256); }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -162,8 +164,11 @@ int incognito_hash(unsigned int algo, cx_hash_t* hasher, unsigned char* buf, uns
     if (algo == CX_SHA256) {
         cx_sha256_init((cx_sha256_t*)hasher);
     }
-    else {
+    if (algo == CX_SHA3) {
         cx_sha3_init((cx_sha3_t*)hasher, 256);
+    }
+    else {
+        cx_keccak_init((cx_sha3_t*)hasher, 256);
     }
     return cx_hash(hasher, CX_LAST, buf, len, out, 32);
 }
@@ -296,15 +301,15 @@ void incognito_ge_fromfe_frombytes(unsigned char* ge, unsigned char* bytes) {
 
 #define Pxy uv._Pxy
 #else
-#define u  (G_io_state_t.io_buffer + 0 * 32)
-#define v  (G_io_state_t.io_buffer + 1 * 32)
-#define w  (G_io_state_t.io_buffer + 2 * 32)
-#define x  (G_io_state_t.io_buffer + 3 * 32)
-#define y  (G_io_state_t.io_buffer + 4 * 32)
-#define z  (G_io_state_t.io_buffer + 5 * 32)
-#define rX (G_io_state_t.io_buffer + 6 * 32)
-#define rY (G_io_state_t.io_buffer + 7 * 32)
-#define rZ (G_io_state_t.io_buffer + 8 * 32)
+#define u  (processData + 0 * 32)
+#define v  (processData + 1 * 32)
+#define w  (processData + 2 * 32)
+#define x  (processData + 3 * 32)
+#define y  (processData + 4 * 32)
+#define z  (processData + 5 * 32)
+#define rX (processData + 6 * 32)
+#define rY (processData + 7 * 32)
+#define rZ (processData + 8 * 32)
 
     //#define uv7 (G_incognito_vstate.io_buffer+9*32)
     //#define v3  (G_incognito_vstate.io_buffer+10*32)
@@ -947,4 +952,9 @@ int incognito_vamount2str(unsigned char* binary, char* str, unsigned int str_len
 void incognito_doublesha256(unsigned char* buf, unsigned int len, unsigned char* out) {
     cx_hash_sha256(buf, len, out, 32);
     cx_hash_sha256(out, 32, out, 32);
+}
+
+void incognito_add_B58checksum(unsigned char* preEncode, unsigned int len, unsigned char* buf) {
+    incognito_sha3(preEncode, len, buf);
+    os_memmove(preEncode + len, buf, 4);
 }

@@ -5,7 +5,6 @@
 #include "globals.h"
 #include "crypto.h"
 #include "menu.h"
-#include "io.h"
 
 // static char address[123];
 static uint8_t set_result_get_address() {
@@ -72,19 +71,19 @@ void handleGetAddress(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t data
   processData[34] = 32;
   os_memmove(processData + 35, G_crypto_state_t.A, 32);
 
-
   uint8_t buffer[32];
-  //sha3
-  incognito_keccak_F(processData, 67, buffer);
-  os_memmove(processData + 67, buffer, 4);
+  incognito_add_B58checksum(processData,67,buffer);
 
   unsigned char base58check[76];
-  os_memset(buffer, 0, 32);
   base58check[0] = 0;
   os_memmove(base58check + 1, processData, 71);
-  incognito_keccak_F(base58check, 72, buffer);
-  os_memmove(base58check + 72, buffer, 4);
+
+  os_memset(buffer, 0, 32);
   os_memset(processData, 0, sizeof(processData));
+
+  incognito_add_B58checksum(base58check,72,buffer);
+
+  
 
   processData[encodeBase58(base58check, 76, (unsigned char*)processData, 120) + 3] = '\0';
 
