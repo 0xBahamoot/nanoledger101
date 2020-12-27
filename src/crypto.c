@@ -69,7 +69,7 @@ void incognito_aes_derive(cx_aes_key_t* sk, unsigned char* seed32, unsigned char
     incognito_keccak_H(h1, 32, h1);
 
     cx_aes_init_key(h1, 16, sk);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -78,7 +78,7 @@ void incognito_aes_generate(cx_aes_key_t* sk) {
     unsigned char h1[16];
     cx_rng(h1, 16);
     cx_aes_init_key(h1, 16, sk);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* --- assert: max_len>0                                               --- */
@@ -89,35 +89,35 @@ unsigned int incognito_encode_varint(unsigned char* varint, unsigned int max_len
     while (value >= 0x80) {
         if (len == (max_len - 1)) {
             THROW(SW_WRONG_DATA_RANGE);
-        }
+            }
         varint[len] = (value & 0x7F) | 0x80;
         value = value >> 7;
         len++;
-    }
+        }
     varint[len] = value;
     return len + 1;
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* --- assert: max_len>0                                               --- */
 /* ----------------------------------------------------------------------- */
 unsigned int incognito_decode_varint(unsigned char* varint, unsigned int max_len, uint64_t* value) {
     uint64_t v;
-    int len;
+    unsigned int len;
     v = 0;
     len = 0;
     while ((varint[len]) & 0x80) {
         if (len == (max_len - 1)) {
             THROW(SW_WRONG_DATA_RANGE);
-        }
+            }
         v = v + ((uint64_t)((varint[len]) & 0x7f) << (len * 7));
         len++;
-    }
+        }
 
     v = v + ((uint64_t)((varint[len]) & 0x7f) << (len * 7));
     *value = v;
     return len + 1;
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -129,8 +129,8 @@ void incognito_reverse32(unsigned char* rscal, unsigned char* scal) {
         x = scal[i];
         rscal[i] = scal[31 - i];
         rscal[31 - i] = x;
+        }
     }
-}
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -146,14 +146,14 @@ void incognito_hash_init_sha3(cx_hash_t* hasher) { cx_sha3_init((cx_sha3_t*)hash
 /* ----------------------------------------------------------------------- */
 void incognito_hash_update(cx_hash_t* hasher, unsigned char* buf, unsigned int len) {
     cx_hash(hasher, 0, buf, len, NULL, 0);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
 int incognito_hash_final(cx_hash_t* hasher, unsigned char* out) {
     return cx_hash(hasher, CX_LAST, NULL, 0, out, 32);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -163,15 +163,15 @@ int incognito_hash(unsigned int algo, cx_hash_t* hasher, unsigned char* buf, uns
     hasher->algo = algo;
     if (algo == CX_SHA256) {
         cx_sha256_init((cx_sha256_t*)hasher);
-    }
+        }
     if (algo == CX_SHA3) {
         cx_sha3_init((cx_sha3_t*)hasher, 256);
-    }
+        }
     else {
         cx_keccak_init((cx_sha3_t*)hasher, 256);
-    }
+        }
     return cx_hash(hasher, CX_LAST, buf, len, out, 32);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -261,7 +261,7 @@ const unsigned char C_fe_fffb3[] = {
     0x40, 0x3f, 0x0d, 0xa2, 0xed, 0x40, 0x24, 0xff, 0x4e, 0xa5, 0x96,
     0x42, 0x29, 0x58, 0x1b, 0x7d, 0x87, 0x17, 0x30, 0x2c, 0x66
 
-};
+    };
 const unsigned char C_fe_fffb4[] = {
     /* sqrt(sqrt(-1) * A * (A + 2))
      * 1a43f3031067dbf926c0f4887ef7432eee46fc08a13f4a49853d1903b6b39186
@@ -270,7 +270,7 @@ const unsigned char C_fe_fffb4[] = {
     0x88, 0x7e, 0xf7, 0x43, 0x2e, 0xee, 0x46, 0xfc, 0x08, 0xa1, 0x3f,
     0x4a, 0x49, 0x85, 0x3d, 0x19, 0x03, 0xb6, 0xb3, 0x91, 0x86
 
-};
+    };
 const unsigned char C_fe_sqrtm1[] = {
     /* sqrt(2 * A * (A + 2))
      * 0x2b8324804fc1df0b2b4d00993dfbd7a72f431806ad2fe478c4ee1b274a0ea0b0
@@ -291,10 +291,10 @@ void incognito_ge_fromfe_frombytes(unsigned char* ge, unsigned char* bytes) {
         struct {
             unsigned char _uv7[32];
             unsigned char  _v3[32];
-        };
+            };
         unsigned char _Pxy[65];
 
-    } uv;
+        } uv;
 
 #define uv7 uv._uv7
 #define v3  uv._v3
@@ -318,9 +318,9 @@ void incognito_ge_fromfe_frombytes(unsigned char* ge, unsigned char* bytes) {
         struct {
             unsigned char _uv7[32];
             unsigned char _v3[32];
-        };
+            };
 
-    } uv;
+        } uv;
 
 #define uv7 uv._uv7
 #define v3  uv._v3
@@ -372,14 +372,14 @@ void incognito_ge_fromfe_frombytes(unsigned char* ge, unsigned char* bytes) {
         cx_math_addm(y, w, x, MOD);
         if (!cx_math_is_zero(y, 32)) {
             goto negative;
-        }
+            }
         else {
             cx_math_multm(rX, rX, (unsigned char*)C_fe_fffb1, MOD);
+            }
         }
-    }
     else {
         cx_math_multm(rX, rX, (unsigned char*)C_fe_fffb2, MOD);
-    }
+        }
     cx_math_multm(rX, rX, u, MOD);  // u * sqrt(2 * A * (A + 2) * w / x)
     cx_math_multm(z, z, v, MOD);    // -2 * A * u^2
     sign = 0;
@@ -392,10 +392,10 @@ negative:
     if (!cx_math_is_zero(y, 32)) {
         cx_math_addm(y, w, x, MOD);
         cx_math_multm(rX, rX, (unsigned char*)C_fe_fffb3, MOD);
-    }
+        }
     else {
         cx_math_multm(rX, rX, (unsigned char*)C_fe_fffb4, MOD);
-    }
+        }
     // r->X = sqrt(A * (A + 2) * w / x)
     // z = -A
     sign = 1;
@@ -404,7 +404,7 @@ setsign:
     if (fe_isnegative(rX) != sign) {
         // fe_neg(r->X, r->X);
         cx_math_sub(rX, (unsigned char*)C_ED25519_FIELD, rX, 32);
-    }
+        }
     cx_math_addm(rZ, z, w, MOD);
     cx_math_subm(rY, z, w, MOD);
     cx_math_multm(rX, rX, rZ, MOD);
@@ -431,7 +431,7 @@ setsign:
 #undef v3
 
 #undef Pxy
-}
+    }
 
 /* ======================================================================= */
 /*                            DERIVATION & KEY                             */
@@ -443,7 +443,7 @@ setsign:
 void incognito_hash_to_scalar(unsigned char* scalar, unsigned char* raw, unsigned int raw_len) {
     incognito_keccak_F(raw, raw_len, scalar);
     incognito_reduce(scalar, scalar);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -452,7 +452,7 @@ void incognito_hash_to_ec(unsigned char* ec, unsigned char* ec_pub) {
     incognito_keccak_F(ec_pub, 32, ec);
     incognito_ge_fromfe_frombytes(ec, ec);
     incognito_ecmul_8(ec, ec);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -460,7 +460,7 @@ void incognito_hash_to_ec(unsigned char* ec, unsigned char* ec_pub) {
 void incognito_generate_keypair(unsigned char* ec_pub, unsigned char* ec_priv) {
     incognito_rng_mod_order(ec_priv);
     incognito_ecmul_G(ec_pub, ec_priv);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* --- ok                                                              --- */
@@ -468,7 +468,7 @@ void incognito_generate_keypair(unsigned char* ec_pub, unsigned char* ec_priv) {
 void incognito_generate_key_derivation(unsigned char* drv_data, unsigned char* P,
     unsigned char* scalar) {
     incognito_ecmul_8k(drv_data, P, scalar);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---  ok                                                             --- */
@@ -483,7 +483,7 @@ void incognito_derivation_to_scalar(unsigned char* scalar, unsigned char* drv_da
     len_varint += 32;
     incognito_keccak_F(varint, len_varint, varint);
     incognito_reduce(scalar, varint);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -497,7 +497,7 @@ void incognito_derive_secret_key(unsigned char* x, unsigned char* drv_data, unsi
 
     // generate
     incognito_addm(x, tmp, ec_priv);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -511,14 +511,14 @@ void incognito_derive_public_key(unsigned char* x, unsigned char* drv_data, unsi
     // generate
     incognito_ecmul_G(tmp, tmp);
     incognito_ecadd(x, tmp, ec_pub);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
 void incognito_secret_key_to_public_key(unsigned char* ec_pub, unsigned char* ec_priv) {
     incognito_ecmul_G(ec_pub, ec_priv);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -527,7 +527,7 @@ void incognito_generate_key_image(unsigned char* img, unsigned char* P, unsigned
     unsigned char I[32];
     incognito_hash_to_ec(I, P);
     incognito_ecmul_k(img, I, x);
-}
+    }
 
 /* ======================================================================= */
 /*                               SUB ADDRESS                               */
@@ -543,7 +543,7 @@ void incognito_derive_subaddress_public_key(unsigned char* x, unsigned char* pub
     incognito_derivation_to_scalar(scalarG, drv_data, index);
     incognito_ecmul_G(scalarG, scalarG);
     incognito_ecsub(x, pub, scalarG);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* --- ok                                                              --- */
@@ -555,7 +555,7 @@ void incognito_get_subaddress_spend_public_key(unsigned char* x, unsigned char* 
     incognito_secret_key_to_public_key(x, x);
     // D = B + M
     incognito_ecadd(x, x, G_crypto_state_t.B);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -565,7 +565,7 @@ void incognito_get_subaddress(unsigned char* C, unsigned char* D, unsigned char*
     incognito_get_subaddress_spend_public_key(D, index);
     // C = a*D
     incognito_ecmul_k(C, D, G_crypto_state_t.a);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* --- ok                                                              --- */
@@ -581,7 +581,7 @@ void incognito_get_subaddress_secret_key(unsigned char* sub_s, unsigned char* s,
     // hash_to_scalar with more that 32bytes:
     incognito_keccak_F(in, sizeof(in), sub_s);
     incognito_reduce(sub_s, sub_s);
-}
+    }
 
 /* ======================================================================= */
 /*                                  MATH                                   */
@@ -595,8 +595,8 @@ void incognito_check_scalar_range_1N(unsigned char* s) {
     incognito_reverse32(x, s);
     if (cx_math_is_zero(x, 32) || cx_math_cmp(x, C_ED25519_ORDER, 32) >= 0) {
         THROW(SW_WRONG_DATA_RANGE);
+        }
     }
-}
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -604,8 +604,8 @@ void incognito_check_scalar_range_1N(unsigned char* s) {
 void incognito_check_scalar_not_null(unsigned char* s) {
     if (cx_math_is_zero(s, 32)) {
         THROW(SW_WRONG_DATA_RANGE);
+        }
     }
-}
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
@@ -617,7 +617,7 @@ void incognito_ecmul_G(unsigned char* W, unsigned char* scalar32) {
     cx_ecfp_scalar_mult(CX_CURVE_Ed25519, Pxy, sizeof(Pxy), s, 32);
     cx_edward_compress_point(CX_CURVE_Ed25519, Pxy, sizeof(Pxy));
     os_memmove(W, &Pxy[1], 32);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -636,7 +636,7 @@ void incognito_ecmul_H(unsigned char* W, unsigned char* scalar32) {
     cx_edward_compress_point(CX_CURVE_Ed25519, Pxy, sizeof(Pxy));
 
     os_memmove(W, &Pxy[1], 32);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -655,7 +655,7 @@ void incognito_ecmul_k(unsigned char* W, unsigned char* P, unsigned char* scalar
     cx_edward_compress_point(CX_CURVE_Ed25519, Pxy, sizeof(Pxy));
 
     os_memmove(W, &Pxy[1], 32);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -664,7 +664,7 @@ void incognito_ecmul_8k(unsigned char* W, unsigned char* P, unsigned char* scala
     unsigned char s[32];
     incognito_multm_8(s, scalar32);
     incognito_ecmul_k(W, P, s);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -680,7 +680,7 @@ void incognito_ecmul_8(unsigned char* W, unsigned char* P) {
     cx_ecfp_add_point(CX_CURVE_Ed25519, Pxy, Pxy, Pxy, sizeof(Pxy));
     cx_edward_compress_point(CX_CURVE_Ed25519, Pxy, sizeof(Pxy));
     os_memmove(W, &Pxy[1], 32);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -701,7 +701,7 @@ void incognito_ecadd(unsigned char* W, unsigned char* P, unsigned char* Q) {
 
     cx_edward_compress_point(CX_CURVE_Ed25519, Pxy, sizeof(Pxy));
     os_memmove(W, &Pxy[1], 32);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -723,7 +723,7 @@ void incognito_ecsub(unsigned char* W, unsigned char* P, unsigned char* Q) {
 
     cx_edward_compress_point(CX_CURVE_Ed25519, Pxy, sizeof(Pxy));
     os_memmove(W, &Pxy[1], 32);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -744,7 +744,7 @@ void incognito_ecdhHash(unsigned char* x, unsigned char* k) {
     os_memmove(data, "amount", 6);
     os_memmove(data + 6, k, 32);
     incognito_keccak_F(data, 38, x);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -765,7 +765,7 @@ void incognito_genCommitmentMask(unsigned char* c, unsigned char* sk) {
     os_memmove(data, "commitment_mask", 15);
     os_memmove(data + 15, sk, 32);
     incognito_hash_to_scalar(c, data, 15 + 32);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -778,7 +778,7 @@ void incognito_addm(unsigned char* r, unsigned char* a, unsigned char* b) {
     incognito_reverse32(rb, b);
     cx_math_addm(r, ra, rb, (unsigned char*)C_ED25519_ORDER, 32);
     incognito_reverse32(r, r);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -791,7 +791,7 @@ void incognito_subm(unsigned char* r, unsigned char* a, unsigned char* b) {
     incognito_reverse32(rb, b);
     cx_math_subm(r, ra, rb, (unsigned char*)C_ED25519_ORDER, 32);
     incognito_reverse32(r, r);
-}
+    }
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
@@ -803,7 +803,7 @@ void incognito_multm(unsigned char* r, unsigned char* a, unsigned char* b) {
     incognito_reverse32(rb, b);
     cx_math_multm(r, ra, rb, (unsigned char*)C_ED25519_ORDER, 32);
     incognito_reverse32(r, r);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -817,7 +817,7 @@ void incognito_multm_8(unsigned char* r, unsigned char* a) {
     rb[31] = 8;
     cx_math_multm(r, ra, rb, (unsigned char*)C_ED25519_ORDER, 32);
     incognito_reverse32(r, r);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -827,7 +827,7 @@ void incognito_reduce(unsigned char* r, unsigned char* a) {
     incognito_reverse32(ra, a);
     cx_math_modm(ra, 32, (unsigned char*)C_ED25519_ORDER, 32);
     incognito_reverse32(r, ra);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -837,7 +837,7 @@ void incognito_rng_mod_order(unsigned char* r) {
     cx_rng(rnd, 32 + 8);
     cx_math_modm(rnd, 32 + 8, (unsigned char*)C_ED25519_ORDER, 32);
     incognito_reverse32(r, rnd + 8);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -854,13 +854,13 @@ void incognito_uint642str(uint64_t val, char* str, unsigned int str_len) {
         offset--;
         stramount[offset] = '0' + val % 10;
         val = val / 10;
-    }
+        }
     len = sizeof(stramount) - offset;
     if (len > str_len) {
         THROW(SW_WRONG_DATA_RANGE);
-    }
+        }
     os_memmove(str, stramount + offset, len);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -879,7 +879,7 @@ int incognito_amount2str(uint64_t xmr, char* str, unsigned int str_len) {
     if (xmr == 0) {
         str[0] = '0';
         return 1;
-    }
+        }
 
     // uint64 units to str
     // offset: 0 | 1-20     | 21
@@ -891,7 +891,7 @@ int incognito_amount2str(uint64_t xmr, char* str, unsigned int str_len) {
         stramount[offset] = '0' + xmr % 10;
         xmr = xmr / 10;
         offset--;
-    }
+        }
     // offset: 0-7 | 8 | 9-20 |21
     // ----------------------
     // value:  xmr | . | units| 0
@@ -900,23 +900,23 @@ int incognito_amount2str(uint64_t xmr, char* str, unsigned int str_len) {
     offset = 0;
     while ((stramount[offset] == '0') && (stramount[offset] != '.')) {
         offset++;
-    }
+        }
     if (stramount[offset] == '.') {
         offset--;
-    }
+        }
     len = 20;
     while ((stramount[len] == '0') && (stramount[len] != '.')) {
         len--;
-    }
+        }
     len = len - offset + 1;
     ov = 0;
     if (len > (str_len - 1)) {
         len = str_len - 1;
         ov = 1;
-    }
+        }
     os_memmove(str, stramount + offset, len);
     return ov;
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -927,16 +927,16 @@ uint64_t incognito_bamount2uint64(unsigned char* binary) {
     xmr = 0;
     for (i = 7; i >= 0; i--) {
         xmr = xmr * 256 + binary[i];
-    }
+        }
     return xmr;
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
 int incognito_bamount2str(unsigned char* binary, char* str, unsigned int str_len) {
     return incognito_amount2str(incognito_bamount2uint64(binary), str, str_len);
-}
+    }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
@@ -946,15 +946,15 @@ int incognito_vamount2str(unsigned char* binary, char* str, unsigned int str_len
     uint64_t amount;
     incognito_decode_varint(binary, 8, &amount);
     return incognito_amount2str(amount, str, str_len);
-}
+    }
 
 
 void incognito_doublesha256(unsigned char* buf, unsigned int len, unsigned char* out) {
     cx_hash_sha256(buf, len, out, 32);
     cx_hash_sha256(out, 32, out, 32);
-}
+    }
 
 void incognito_add_B58checksum(unsigned char* preEncode, unsigned int len, unsigned char* buf) {
     incognito_sha3(preEncode, len, buf);
     os_memmove(preEncode + len, buf, 4);
-}
+    }

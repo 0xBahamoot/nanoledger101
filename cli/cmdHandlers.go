@@ -1,38 +1,11 @@
 package main
 
 import (
-	"bytes"
 	"encoding/binary"
-	"encoding/hex"
 	"errors"
 	"fmt"
 
 	"gitlab.com/NebulousLabs/Sia/types"
-)
-
-const (
-	cmdGetVersion       = 0x01
-	cmdGetAddress       = 0x02
-	cmdGetViewKey       = 0x03
-	cmdGetPrivateKey    = 0x04
-	cmdImportPrivateKey = 0x05
-	cmdGenCommitment    = 0x06
-	cmdGenOTA           = 0x07
-	cmdGenRingSig       = 0x08
-	cmdGenProof         = 0x09
-	cmdGenAssetTag      = 0x10
-	cmdKeyImage         = 0x11
-	cmdEncryptCoin      = 0x50
-	cmdDecryptCoin      = 0x51
-	cmdImportSeed       = 0x90
-
-	p1First = 0x00
-	p1More  = 0x80
-
-	p2DisplayAddress = 0x00
-	p2DisplayPubkey  = 0x01
-	p2DisplayHash    = 0x00
-	p2SignHash       = 0x01
 )
 
 func (n *NanoS) GetVersion() (version string, err error) {
@@ -45,20 +18,6 @@ func (n *NanoS) GetVersion() (version string, err error) {
 	}
 	return fmt.Sprintf("v%d.%d.%d", resp[0], resp[1], resp[2]), nil
 }
-
-// func (n *NanoS) GetPublicKey(index uint32) (pubkey [32]byte, err error) {
-// 	encIndex := make([]byte, 4)
-// 	binary.LittleEndian.PutUint32(encIndex, index)
-
-// 	resp, err := n.Exchange(cmdGetAddress, 0, p2DisplayPubkey, encIndex)
-// 	if err != nil {
-// 		return [32]byte{}, err
-// 	}
-// 	if copy(pubkey[:], resp) != len(pubkey) {
-// 		return [32]byte{}, errors.New("pubkey has wrong length")
-// 	}
-// 	return
-// }
 
 func (n *NanoS) GetAddress(index uint32) (addr types.UnlockHash, err error) {
 	encIndex := make([]byte, 4)
@@ -98,12 +57,7 @@ func (n *NanoS) GetViewKey() error {
 }
 
 func (n *NanoS) ImportPrivateKey() error {
-	buf := new(bytes.Buffer)
-	bs, _ := hex.DecodeString("00000000000214666ccc56b88d4d8d3f5fae61f1f06d9620327fe259157272016dfe54ef6fef203b50d18fae649b7dfa6e3e3078f9ba83142f993acd55d6649abc28b7979d7a08")
-	buf.Write(bs)
-	// buf.WriteString("111111bgk2j6vZQvzq8tkonDLLXEvLkMwBMn5BoLXLpf631boJnJ1UgJnLBzXe4qSMXGJAKw1LdKmfWZDNkhd24gkb2oqbs4q9UgjJZDvq")
-
-	resp, err := n.Exchange(cmdImportPrivateKey, 0, 0, buf.Next(255))
+	resp, err := n.Exchange(cmdImportPrivateKey, 0, 0, nil)
 	if err != nil {
 		return err
 	}

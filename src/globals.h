@@ -41,14 +41,10 @@ struct crypto_state_s {
     uint8_t isHDGen;
     privatekey_t key;
 
-    unsigned char a[32]; //private view key
+    unsigned char a[32]; //private view key //this should be cal when needed?
 
-    // unsigned char b[32]; //private spend key
-    // unsigned char o[32]; //private OTA key
-    // unsigned char O[32]; //public OTA key
-
-    unsigned char A[32]; //public view key/transmission key
-    unsigned char B[32]; //public spend key
+    unsigned char A[32]; //public view key/transmission key //this should be cal when needed?
+    unsigned char B[32]; //public spend key //this should be cal when needed?
     /* SPK */
     cx_aes_key_t spk;
     unsigned char hmac_key[32];

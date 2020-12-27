@@ -7,7 +7,7 @@
 
 static uint8_t set_result_get_view() {
   uint8_t tx = 0;
-  const uint8_t view_size = strlen(processData);
+  const uint8_t view_size = 33;
   // G_io_apdu_buffer[tx++] = view_size;
   os_memmove(G_io_apdu_buffer + tx, processData, view_size);
   tx += view_size;
@@ -24,13 +24,13 @@ UX_STEP_NOCB(
     "Retrieving",
     "Viewkey?",
   });
-UX_STEP_NOCB(
-  ux_display_view_flow_2_step,
-  bnnn_paging,
-  {
-    .title = "Viewkey",
-    .text = processData,
-  });
+// UX_STEP_NOCB(
+//   ux_display_view_flow_2_step,
+//   bnnn_paging,
+//   {
+//     .title = "Viewkey",
+//     .text = processData,
+//   });
 UX_STEP_VALID(
   ux_display_view_flow_3_step,
   pb,
@@ -50,7 +50,7 @@ UX_STEP_VALID(
 
 UX_FLOW(ux_display_view_flow,
   &ux_display_view_flow_1_step,
-  &ux_display_view_flow_2_step,
+  // &ux_display_view_flow_2_step,
   &ux_display_view_flow_3_step,
   &ux_display_view_flow_4_step,
   FLOW_LOOP

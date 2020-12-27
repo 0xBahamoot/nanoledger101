@@ -1,12 +1,8 @@
 package main
 
 import (
-	"bytes"
-	"encoding/binary"
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"math"
 	"os"
@@ -16,181 +12,19 @@ import (
 	"lukechampine.com/flagg"
 )
 
-var DEBUG bool
-
-type hidFramer struct {
-	rw  io.ReadWriter
-	seq uint16
-	buf [64]byte
-	pos int
-}
-
-func (hf *hidFramer) Reset() {
-	hf.seq = 0
-}
-
-func (hf *hidFramer) Write(p []byte) (int, error) {
-	if DEBUG {
-		fmt.Println("HID <=", hex.EncodeToString(p))
-	}
-	// split into 64-byte chunks
-	chunk := make([]byte, 64)
-	binary.BigEndian.PutUint16(chunk[:2], 0x0101)
-	chunk[2] = 0x05
-	var seq uint16
-	buf := new(bytes.Buffer)
-	binary.Write(buf, binary.BigEndian, uint16(len(p)))
-	buf.Write(p)
-	for buf.Len() > 0 {
-		binary.BigEndian.PutUint16(chunk[3:5], seq)
-		n, _ := buf.Read(chunk[5:])
-		if n, err := hf.rw.Write(chunk[:5+n]); err != nil {
-			return n, err
-		}
-		seq++
-	}
-	return len(p), nil
-}
-
-func (hf *hidFramer) Read(p []byte) (int, error) {
-	if hf.seq > 0 && hf.pos != 64 {
-		// drain buf
-		n := copy(p, hf.buf[hf.pos:])
-		hf.pos += n
-		return n, nil
-	}
-	// read next 64-byte packet
-	if n, err := hf.rw.Read(hf.buf[:]); err != nil {
-		return 0, err
-	} else if n != 64 {
-		panic("read less than 64 bytes from HID")
-	}
-	// parse header
-	channelID := binary.BigEndian.Uint16(hf.buf[:2])
-	commandTag := hf.buf[2]
-	seq := binary.BigEndian.Uint16(hf.buf[3:5])
-	if channelID != 0x0101 {
-		return 0, fmt.Errorf("bad channel ID 0x%x", channelID)
-	} else if commandTag != 0x05 {
-		return 0, fmt.Errorf("bad command tag 0x%x", commandTag)
-	} else if seq != hf.seq {
-		return 0, fmt.Errorf("bad sequence number %v (expected %v)", seq, hf.seq)
-	}
-	hf.seq++
-	// start filling p
-	n := copy(p, hf.buf[5:])
-	hf.pos = 5 + n
-	return n, nil
-}
-
-type APDU struct {
-	CLA     byte
-	INS     byte
-	P1, P2  byte
-	Payload []byte
-}
-
-type apduFramer struct {
-	hf  *hidFramer
-	buf [2]byte // to read APDU length prefix
-}
-
-func (af *apduFramer) Exchange(apdu APDU) ([]byte, error) {
-	if len(apdu.Payload) > 255 {
-		panic("APDU payload cannot exceed 255 bytes")
-	}
-	af.hf.Reset()
-	data := append([]byte{
-		apdu.CLA,
-		apdu.INS,
-		apdu.P1, apdu.P2,
-		byte(len(apdu.Payload)),
-	}, apdu.Payload...)
-	if _, err := af.hf.Write(data); err != nil {
-		return nil, err
-	}
-
-	// read APDU length
-	if _, err := io.ReadFull(af.hf, af.buf[:]); err != nil {
-		return nil, err
-	}
-	// read APDU payload
-	respLen := binary.BigEndian.Uint16(af.buf[:2])
-	resp := make([]byte, respLen)
-	n, _ := io.ReadFull(af.hf, resp)
-	// if DEBUG {
-	fmt.Println("HID =>", respLen, n, hex.EncodeToString(resp))
-	// }
-
-	// if _, err := io.ReadFull(af.hf, af.buf[:]); err != nil {
-	// 	return nil, err
-	// }
-	// respLen2 := binary.BigEndian.Uint16(af.buf[:2])
-	// resp2 := make([]byte, respLen2)
-	// _, _ = io.ReadFull(af.hf, resp2)
-	// fmt.Println("HID2 =>", respLen2, hex.EncodeToString(resp2))
-
-	return resp, nil
-}
-
-type NanoS struct {
-	device *apduFramer
-}
-
-type ErrCode uint16
-
-func (c ErrCode) Error() string {
-	return fmt.Sprintf("Error code 0x%x", uint16(c))
-}
-
-const codeSuccess = 0x9000
-const codeUserRejected = 0x6985
-const codeInvalidParam = 0x6b01
-
-var errUserRejected = errors.New("user denied request")
-var errInvalidParam = errors.New("invalid request parameters")
-
-func (n *NanoS) Exchange(cmd byte, p1, p2 byte, data []byte) (resp []byte, err error) {
-	resp, err = n.device.Exchange(APDU{
-		CLA:     0xE0,
-		INS:     cmd,
-		P1:      p1,
-		P2:      p2,
-		Payload: data,
-	})
-	if err != nil {
-		return nil, err
-	} else if len(resp) < 2 {
-		return nil, errors.New("APDU response missing status code")
-	}
-	// code := binary.BigEndian.Uint16(resp[len(resp)-2:])
-	resp = resp[0 : len(resp)-2]
-	// switch code {
-	// case codeSuccess:
-	// 	err = nil
-	// case codeUserRejected:
-	// 	err = errUserRejected
-	// case codeInvalidParam:
-	// 	err = errInvalidParam
-	// default:
-	// 	err = ErrCode(code)
-	// }
-	return
-}
-
 func OpenNanoS() (*NanoS, error) {
-	// const (
-	// 	ledgerVendorID       = 0x2c97
-	// 	ledgerNanoSProductID = 0x0001
-	// 	//ledgerUsageID        = 0xffa0
-	// )
+	const (
+		ledgerVendorID       = 0x2c97
+		ledgerNanoSProductID = 0x0001
+		//ledgerUsageID        = 0xffa0
+	)
 
 	// search for Nano S
-	devices := hid.Enumerate(0, 0)
+	devices := hid.Enumerate(ledgerVendorID, ledgerNanoSProductID)
 	if len(devices) == 0 {
 		return nil, errors.New("Nano S not detected")
-	} //else if len(devices) > 1 {
-	// 	return nil, errors.New("Unexpected error -- Is the Sia wallet app running?")
+	} // else if len(devices) > 1 {
+	// 	return nil, errors.New("Unexpected error -- Is the Incognito wallet app running?")
 	// }
 
 	// open the device
@@ -221,7 +55,7 @@ func parseIndex(s string) uint32 {
 
 const (
 	rootUsage = `Usage:
-    sialedger [flags] [action]
+    incognitoledger [flags] [action]
 
 Actions:
     addr            generate an address
@@ -253,29 +87,6 @@ Generates an address using the public key with the specified index.
 	genKeyImageUsage   = ``
 	encryptCoinUsage   = ``
 	decryptCoinUsage   = ``
-
-// 	pubkeyUsage = `Usage:
-// 	sialedger pubkey [key index]
-
-// Generates the public key with the specified index.
-// `
-// 	hashUsage = `Usage:
-// 	sialedger hash [hex-encoded hash] [key index]
-
-// Signs a 256-bit hash using the private key with the specified index. The hash
-// must be hex-encoded.
-
-// Only sign hashes you trust. In practice, it is very difficult
-// to calculate a hash in a trusted manner.
-// `
-// 	txnUsage = `Usage:
-// 	sialedger txn [flags] [txn.json] [sig index] [key index]
-
-// Calculates and signs the hash of a transaction using the private key with the
-// specified key index. The CoveredFields of the specified TransactionSignature
-// must set WholeTransaction = true.
-// `
-// 	txnHashUsage = `calculate the transaction hash, but do not sign it`
 )
 
 func main() {
