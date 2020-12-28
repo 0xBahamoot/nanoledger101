@@ -59,12 +59,22 @@ void incognito_reset_crypto_state() {
 }
 
 void incognito_init_crypto_state() {
-   incognito_keccak_F(G_crypto_state_t.key.key, 32, G_crypto_state_t.a);
+  incognito_keccak_F(G_crypto_state_t.key.key, 32, G_crypto_state_t.a);
   incognito_reduce(G_crypto_state_t.a, G_crypto_state_t.a);
 
-  incognito_ecmul_G(G_crypto_state_t.A, G_crypto_state_t.a);
-  incognito_ecmul_G(G_crypto_state_t.B, G_crypto_state_t.key.key);
+  // incognito_ecmul_G(G_crypto_state_t.A, G_crypto_state_t.a);
+  // incognito_ecmul_G(G_crypto_state_t.B, G_crypto_state_t.key.key);
 
   // generate key protection
   incognito_aes_derive(&G_crypto_state_t.spk, G_crypto_state_t.key.chain_code, G_crypto_state_t.a, G_crypto_state_t.key.key);
+}
+
+// G_crypto_state_t.A
+void incognito_gen_public_view_key(unsigned char* key) {
+  incognito_ecmul_G(key, G_crypto_state_t.a);
+}
+
+// G_crypto_state_t.B
+void incognito_gen_public_spend_key(unsigned char* key) {
+  incognito_ecmul_G(key, G_crypto_state_t.key.key);
 }

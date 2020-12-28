@@ -87,6 +87,7 @@ Generates an address using the public key with the specified index.
 	genKeyImageUsage   = ``
 	encryptCoinUsage   = ``
 	decryptCoinUsage   = ``
+	getValidatorUsage  = ``
 )
 
 func main() {
@@ -108,6 +109,7 @@ func main() {
 	genKeyImageCmd := flagg.New("genkeyimage", genKeyImageUsage)
 	encryptCoinCmd := flagg.New("encoin", encryptCoinUsage)
 	decryptCoinCmd := flagg.New("decoin", decryptCoinUsage)
+	getValidatorCmd := flagg.New("getvalidator", getValidatorUsage)
 
 	cmd := flagg.Parse(flagg.Tree{
 		Cmd: rootCmd,
@@ -125,6 +127,7 @@ func main() {
 			{Cmd: genKeyImageCmd},
 			{Cmd: encryptCoinCmd},
 			{Cmd: decryptCoinCmd},
+			{Cmd: getValidatorCmd},
 		},
 	})
 	args := cmd.Args()
@@ -225,6 +228,11 @@ func main() {
 		}
 	case decryptCoinCmd:
 		err := nanos.DecryptCoin()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	case getValidatorCmd:
+		err := nanos.GetValidatorKey()
 		if err != nil {
 			log.Fatalln(err)
 		}

@@ -39,6 +39,8 @@ unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 #define INS_ENC_COIN 0x50
 #define INS_DEC_COIN 0x51
 
+#define INS_GET_VLD 0x90
+
 
 #define OFFSET_CLA 0
 #define OFFSET_INS 1
@@ -100,6 +102,9 @@ void handleApdu(volatile unsigned int* flags, volatile unsigned int* tx) {
                     THROW(0x6D00);
                     break;
                 case INS_DEC_COIN:
+                    THROW(0x6D00);
+                    break;
+                case INS_GET_VLD:
                     THROW(0x6D00);
                     break;
                 default:

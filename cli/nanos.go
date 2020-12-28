@@ -177,7 +177,7 @@ const (
 	cmdKeyImage         = 0x11
 	cmdEncryptCoin      = 0x50
 	cmdDecryptCoin      = 0x51
-	cmdImportSeed       = 0x90
+	cmdGetValidatorKey  = 0x90
 
 	p1First = 0x00
 	p1More  = 0x80

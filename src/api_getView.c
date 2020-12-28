@@ -21,7 +21,7 @@ UX_STEP_NOCB(
   pnn,
   {
     &C_icon_warning,
-    "Retrieving",
+    "Export",
     "Viewkey?",
   });
 // UX_STEP_NOCB(

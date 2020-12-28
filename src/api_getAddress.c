@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "crypto.h"
 #include "menu.h"
+#include "key.h"
 
 #define ADDRESS_LENGTH 110
 
@@ -67,11 +68,16 @@ void handleGetAddress(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t data
   UNUSED(p1);
   processData[0] = 1;
   processData[1] = 32;
-  os_memmove(processData + 2, G_crypto_state_t.B, 32);
-  processData[34] = 32;
-  os_memmove(processData + 35, G_crypto_state_t.A, 32);
 
-  uint8_t buffer[32];
+  unsigned char buffer[32];
+  incognito_gen_public_spend_key(buffer);
+  os_memmove(processData + 2,buffer, 32);
+  processData[34] = 32;
+  os_memset(buffer, 0, 32);
+  incognito_gen_public_view_key(buffer);
+  os_memmove(processData + 35, buffer, 32);
+
+  os_memset(buffer, 0, 32);
   incognito_add_B58checksum(processData, 67, buffer);
 
   unsigned char base58check[76];

@@ -23,7 +23,7 @@ UX_STEP_NOCB(
   pnn,
   {
     &C_icon_warning,
-    "Retrieving",
+    "Export",
     "Privatekey?",
   });
 UX_STEP_NOCB(

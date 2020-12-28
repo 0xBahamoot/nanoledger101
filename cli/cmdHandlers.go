@@ -135,8 +135,18 @@ func (n *NanoS) EncryptCoin() error {
 	_ = resp
 	return nil
 }
+
 func (n *NanoS) DecryptCoin() error {
 	resp, err := n.Exchange(cmdDecryptCoin, 0, 0, nil)
+	if err != nil {
+		return err
+	}
+	_ = resp
+	return nil
+}
+
+func (n *NanoS) GetValidatorKey() error {
+	resp, err := n.Exchange(cmdGetValidatorKey, 0, 0, nil)
 	if err != nil {
 		return err
 	}
