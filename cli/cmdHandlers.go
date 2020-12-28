@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
 
@@ -57,7 +59,13 @@ func (n *NanoS) GetViewKey() error {
 }
 
 func (n *NanoS) ImportPrivateKey() error {
-	resp, err := n.Exchange(cmdImportPrivateKey, 0, 0, nil)
+	buf := new(bytes.Buffer)
+	// 000100000020812566598706f6f772fa0ec67e5efaac12c85a64b730518077a432fd3cb97a8c20063632b2a159e45002394460aee02de54d2b8926d236f45be2e077dcc81d0d04
+	bs, _ := hex.DecodeString("000100000020812566598706f6f772fa0ec67e5efaac12c85a64b730518077a432fd3cb97a8c20063632b2a159e45002394460aee02de54d2b8926d236f45be2e077dcc81d0d04")
+	buf.Write(bs)
+	// buf.WriteString("111111bgk2j6vZQvzq8tkonDLLXEvLkMwBMn5BoLXLpf631boJnJ1UgJnLBzXe4qSMXGJAKw1LdKmfWZDNkhd24gkb2oqbs4q9UgjJZDvq")
+
+	resp, err := n.Exchange(cmdImportPrivateKey, 0, 0, buf.Next(255))
 	if err != nil {
 		return err
 	}

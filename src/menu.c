@@ -197,7 +197,7 @@ UX_STEP_NOCB(
   ux_idle_flow_1_step,
   pnn,
   {
-    &C_boilerplate_logo,
+    &C_logo,
     "Waiting for",
     "command...",
   });

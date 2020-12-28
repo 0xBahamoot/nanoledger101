@@ -69,17 +69,15 @@ void  handleImportPrivate(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t 
   os_memmove(base58check + 1, processData, 75);
   incognito_add_B58checksum(base58check, 76, (unsigned char*)priv);
   os_memset(priv, 0, sizeof(priv));
-  priv[encodeBase58(base58check, 80, (unsigned char*)priv, 106)] = '\0';
+  priv[encodeBase58(base58check, 80, (unsigned char*)priv, 116)] = '\0';
 
-  // processData[dataLength] = '\0';
-  // uint32_t num;
+  incognito_reset_crypto_state();
+  G_crypto_state_t.key.depth = processData[1];
   G_crypto_state_t.key.child_number = (processData[2] << 24) | (processData[3] << 16) | (processData[4] << 8) | (processData[5]);
+  os_memmove(G_crypto_state_t.key.chain_code,processData+6,32);
+  os_memmove(G_crypto_state_t.key.key,processData+39,32);
+  incognito_init_crypto_state();
 
-
-
-  // uint8_t privKey[32];
-  // os_memmove(privKey, os_memmove, 32);
-  // priv[encodeBase58(privKey, 36, (unsigned char*)priv + 3, 51) + 3] = '\0';
   ux_flow_init(0, ux_display_priv_flow, NULL);
   *flags |= IO_ASYNCH_REPLY;
   };

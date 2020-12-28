@@ -21,6 +21,5 @@ typedef struct privatekey privatekey_t;
 
 void incognito_init_private_key();
 void incognito_reset_crypto_state();
-void incognito_export_private_key();
-
+void incognito_init_crypto_state();
 #endif
