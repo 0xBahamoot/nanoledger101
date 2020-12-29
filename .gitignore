@@ -11,6 +11,7 @@ obj/
 # Editors
 .vscode/
 .idea/
+.vagrant/
 
 # Python
 *.pyc[cod]

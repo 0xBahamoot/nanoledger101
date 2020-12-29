@@ -21,7 +21,6 @@ Vagrant.configure("2") do |config|
 end
 
 sudo python3 -m ledgerblue.loadApp $(APP_LOAD_PARAMS)
-
 make load
 
 sudo apt-get install libusb-0.1-4

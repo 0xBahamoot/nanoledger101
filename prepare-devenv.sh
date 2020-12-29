@@ -1,5 +1,4 @@
 # shellcheck disable=SC1091,SC2155
-
 # SOURCE THIS FILE
 # . prepare-devenv blue|s|x
 
@@ -57,12 +56,10 @@ if [ ! -d dev-env ]; then
     tar xf nanos-secure-sdk.tar.gz
     rm nanos-secure-sdk.tar.gz
     mv nanos-secure-sdk* dev-env/SDK/nanos-secure-sdk
-
-    sh ./pyenv.sh
 fi
 
-
-# source dev-env/ledger_py3/bin/activate
+pip3 install wheel
+pip3 install ledgerblue
 
 if [[ $1 == "blue" ]]; then
     export BOLOS_SDK=$(pwd)/dev-env/SDK/blue-secure-sdk
