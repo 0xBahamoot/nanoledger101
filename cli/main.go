@@ -160,7 +160,6 @@ func main() {
 
 		fmt.Printf("%s v0.1.0\n", os.Args[0])
 		fmt.Println("Nano S app version:", appVersion)
-
 	case addrCmd:
 		if len(args) != 1 {
 			addrCmd.Usage()
@@ -236,65 +235,5 @@ func main() {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		// case pubkeyCmd:
-		// 	if len(args) != 1 {
-		// 		pubkeyCmd.Usage()
-		// 		return
-		// 	}
-		// 	pubkey, err := nanos.GetPublicKey(parseIndex(args[0]))
-		// 	if err != nil {
-		// 		log.Fatalln("Couldn't get public key:", err)
-		// 	}
-		// 	pk := types.Ed25519PublicKey(pubkey)
-		// 	fmt.Println(pk.String())
-
-		// case hashCmd:
-		// 	if len(args) != 2 {
-		// 		hashCmd.Usage()
-		// 		return
-		// 	}
-		// 	var hash [32]byte
-		// 	hashBytes, err := hex.DecodeString(args[0])
-		// 	if err != nil {
-		// 		log.Fatalln("Couldn't read hash:", err)
-		// 	} else if len(hashBytes) != 32 {
-		// 		log.Fatalf("Wrong hex hash length (%v, wanted 32)", len(hashBytes))
-		// 	}
-		// 	copy(hash[:], hashBytes)
-
-		// 	sig, err := nanos.SignHash(hash, parseIndex(args[1]))
-		// 	if err != nil {
-		// 		log.Fatalln("Couldn't get signature:", err)
-		// 	}
-		// 	fmt.Println(base64.StdEncoding.EncodeToString(sig[:]))
-
-		// case txnCmd:
-		// 	if (*txnHash && len(args) != 2) || (!*txnHash && len(args) != 3) {
-		// 		txnCmd.Usage()
-		// 		return
-		// 	}
-		// 	txnBytes, err := ioutil.ReadFile(args[0])
-		// 	if err != nil {
-		// 		log.Fatalln("Couldn't read transaction:", err)
-		// 	}
-		// 	var txn types.Transaction
-		// 	if err := json.Unmarshal(txnBytes, &txn); err != nil {
-		// 		log.Fatalln("Couldn't decode transaction:", err)
-		// 	}
-		// 	sigIndex := uint16(parseIndex(args[1]))
-
-		// 	if *txnHash {
-		// 		sighash, err := nanos.CalcTxnHash(txn, sigIndex)
-		// 		if err != nil {
-		// 			log.Fatalln("Couldn't get hash:", err)
-		// 		}
-		// 		fmt.Println(hex.EncodeToString(sighash[:]))
-		// 	} else {
-		// 		sig, err := nanos.SignTxn(txn, sigIndex, parseIndex(args[2]))
-		// 		if err != nil {
-		// 			log.Fatalln("Couldn't get signature:", err)
-		// 		}
-		// 		fmt.Println(base64.StdEncoding.EncodeToString(sig[:]))
-		// 	}
 	}
 }

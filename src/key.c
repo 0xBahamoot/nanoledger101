@@ -42,9 +42,7 @@ void incognito_gen_private_key(uint32_t account_number, privatekey_t* privKey) {
 
 void incognito_init_private_key() {
   incognito_gen_private_key(2, &G_crypto_state_t.key);
-
   incognito_init_crypto_state();
-
 }
 
 void incognito_load_key(unsigned char* key[69], privatekey_t* privKey) {

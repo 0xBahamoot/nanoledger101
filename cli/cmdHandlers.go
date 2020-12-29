@@ -61,7 +61,7 @@ func (n *NanoS) GetViewKey() error {
 func (n *NanoS) ImportPrivateKey() error {
 	buf := new(bytes.Buffer)
 	// 000100000020812566598706f6f772fa0ec67e5efaac12c85a64b730518077a432fd3cb97a8c20063632b2a159e45002394460aee02de54d2b8926d236f45be2e077dcc81d0d04
-	bs, _ := hex.DecodeString("000100000020812566598706f6f772fa0ec67e5efaac12c85a64b730518077a432fd3cb97a8c20063632b2a159e45002394460aee02de54d2b8926d236f45be2e077dcc81d0d04")
+	bs, _ := hex.DecodeString("00013b36d59d480b6a8a78e73c9614c8f9b23099e5a9f2ebc796b76ed593aa9629a96107e71f20805097644ec46fc8a2ae9114d2ca9eef9c677ccd6c8ce97aed623003e62a1102")
 	buf.Write(bs)
 	// buf.WriteString("111111bgk2j6vZQvzq8tkonDLLXEvLkMwBMn5BoLXLpf631boJnJ1UgJnLBzXe4qSMXGJAKw1LdKmfWZDNkhd24gkb2oqbs4q9UgjJZDvq")
 
