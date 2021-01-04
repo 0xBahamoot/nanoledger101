@@ -3,6 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+	"strconv"
 
 	"github.com/incognitochain/incognito-chain/blockchain"
 	"github.com/incognitochain/incognito-chain/common"
@@ -10,12 +13,14 @@ import (
 	"github.com/incognitochain/incognito-chain/incognitokey"
 	"github.com/incognitochain/incognito-chain/multiview"
 	"github.com/incognitochain/incognito-chain/privacy"
+	"github.com/incognitochain/incognito-chain/wallet"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
 var localnode interface {
 	GetUserDatabase() *leveldb.DB
 	GetBlockchain() *blockchain.BlockChain
+	OnNewBlockFromParticularHeight(chainID int, blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash, height uint64))
 }
 var CoinProcessedState map[byte]uint64
 var TransactionStateDB map[byte]*statedb.StateDB
@@ -76,7 +81,27 @@ func OnNewShardBlock(bc *blockchain.BlockChain, h common.Hash, height uint64) {
 	}
 }
 
-func GetCoinsByPrivateKey(keyset *incognitokey.KeySet, tokenID *common.Hash) ([]*privacy.OutputCoin, error) {
+// func GetCoinsByPrivateKey(keyset *incognitokey.KeySet, tokenID *common.Hash) ([]*privacy.OutputCoin, error) {
+// 	lastByte := keyset.PaymentAddress.Pk[len(keyset.PaymentAddress.Pk)-1]
+// 	shardIDSender := common.GetShardIDFromLastByte(lastByte)
+// 	if tokenID == nil {
+// 		tokenID = &common.Hash{}
+// 		tokenID.SetBytes(common.PRVCoinID[:])
+// 	}
+// 	outcoinList, err := localnode.GetBlockchain().GetListOutputCoinsByKeyset(keyset, shardIDSender, tokenID)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	amount := uint64(0)
+// 	for _, out := range outcoinList {
+// 		amount += out.CoinDetails.GetValue()
+// 	}
+// 	fmt.Println("amount", amount)
+// 	fmt.Println("len(outcoinList)", len(outcoinList))
+// 	return outcoinList, nil
+// }
+
+func GetCoins(keyset *incognitokey.KeySet, tokenID *common.Hash) ([]*privacy.OutputCoin, error) {
 	lastByte := keyset.PaymentAddress.Pk[len(keyset.PaymentAddress.Pk)-1]
 	shardIDSender := common.GetShardIDFromLastByte(lastByte)
 	if tokenID == nil {
@@ -87,26 +112,90 @@ func GetCoinsByPrivateKey(keyset *incognitokey.KeySet, tokenID *common.Hash) ([]
 	if err != nil {
 		return nil, err
 	}
-	amount := uint64(0)
-	for _, out := range outcoinList {
-		amount += out.CoinDetails.GetValue()
-	}
-	fmt.Println("amount", amount)
 	fmt.Println("len(outcoinList)", len(outcoinList))
 	return outcoinList, nil
 }
 
-func GetCoinsByPaymentAddress(keyset *incognitokey.KeySet, tokenID *common.Hash) ([]*privacy.OutputCoin, error) {
-	lastByte := keyset.PaymentAddress.Pk[len(keyset.PaymentAddress.Pk)-1]
-	shardIDSender := common.GetShardIDFromLastByte(lastByte)
-	if tokenID == nil {
-		tokenID = &common.Hash{}
-		tokenID.SetBytes(common.PRVCoinID[:])
+func InitCoinsModule() {
+	CoinProcessedState = make(map[byte]uint64)
+	TransactionStateDB = make(map[byte]*statedb.StateDB)
+	//load CoinProcessedState
+	for i := 0; i < localnode.GetBlockchain().GetChainParams().ActiveShards; i++ {
+		statePrefix := fmt.Sprintf("coin-processed-%v", i)
+		v, err := localnode.GetUserDatabase().Get([]byte(statePrefix), nil)
+		if err != nil {
+			fmt.Println(err)
+		}
+		if v != nil {
+			height, err := strconv.ParseUint(string(v), 0, 64)
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
+			CoinProcessedState[byte(i)] = height
+		} else {
+			CoinProcessedState[byte(i)] = 1
+		}
+		TransactionStateDB[byte(i)] = localnode.GetBlockchain().GetBestStateShard(byte(i)).GetCopiedTransactionStateDB()
+		fmt.Println("TransactionStateDB[byte(i)]", byte(i), TransactionStateDB[byte(i)])
 	}
-	outcoinList, err := localnode.GetBlockchain().GetListOutputCoinsByKeyset(keyset, shardIDSender, tokenID)
+	for i := 0; i < localnode.GetBlockchain().GetChainParams().ActiveShards; i++ {
+		localnode.OnNewBlockFromParticularHeight(i, int64(CoinProcessedState[byte(i)]), true, OnNewShardBlock)
+	}
+	go startService()
+}
+
+func startService() {
+	http.HandleFunc("/getbalance", getBalanceHandler)
+	http.HandleFunc("/getcoins", getCoinsHandler)
+	err := http.ListenAndServe("127.0.0.1:9000", nil)
 	if err != nil {
-		return nil, err
+		log.Fatal("ListenAndServe: ", err)
 	}
-	fmt.Println("len(outcoinList)", len(outcoinList))
-	return outcoinList, nil
+}
+
+func getCoinsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	key := r.URL.Query().Get("key")
+	wl, err := wallet.Base58CheckDeserialize(key)
+	if err != nil {
+		http.Error(w, "Unexpected error", http.StatusInternalServerError)
+		return
+	}
+	outcoins, err := GetCoins(&wl.KeySet, nil)
+	if err != nil {
+		http.Error(w, "Unexpected error", http.StatusInternalServerError)
+		return
+	}
+	coinsBytes, err := json.Marshal(outcoins)
+	if err != nil {
+		http.Error(w, "Unexpected error", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(200)
+	_, err = w.Write(coinsBytes)
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
+func getBalanceHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.WriteHeader(200)
+	// _, err = w.Write(sysBytes)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	return
 }
