@@ -6,7 +6,9 @@ import (
 
 	"github.com/incognitochain/incognito-chain/blockchain"
 	"github.com/incognitochain/incognito-chain/common"
+	"github.com/incognitochain/incognito-chain/dataaccessobject/statedb"
 	"github.com/incognitochain/incognito-chain/incognitokey"
+	"github.com/incognitochain/incognito-chain/multiview"
 	"github.com/incognitochain/incognito-chain/privacy"
 	"github.com/syndtr/goleveldb/leveldb"
 )
@@ -16,6 +18,7 @@ var localnode interface {
 	GetBlockchain() *blockchain.BlockChain
 }
 var CoinProcessedState map[byte]uint64
+var TransactionStateDB map[byte]*statedb.StateDB
 
 func OnNewShardBlock(bc *blockchain.BlockChain, h common.Hash, height uint64) {
 	var blk blockchain.ShardBlock
@@ -28,13 +31,16 @@ func OnNewShardBlock(bc *blockchain.BlockChain, h common.Hash, height uint64) {
 		fmt.Println(err)
 		return
 	}
-	transactionStateDB := bc.GetBestStateShard(byte(blk.GetShardID())).GetCopiedTransactionStateDB()
+
+	transactionStateDB := TransactionStateDB[byte(blk.GetShardID())]
+
 	if len(blk.Body.Transactions) > 0 {
 		err = bc.CreateAndSaveTxViewPointFromBlock(&blk, transactionStateDB)
 		if err != nil {
 			panic(err)
 		}
 	}
+
 	transactionRootHash, err := transactionStateDB.Commit(true)
 	if err != nil {
 		panic(err)
@@ -59,6 +65,15 @@ func OnNewShardBlock(bc *blockchain.BlockChain, h common.Hash, height uint64) {
 		panic(err)
 	}
 	CoinProcessedState[blk.Header.ShardID] = blk.Header.Height
+	if (blk.Header.Height % 100) == 0 {
+		// fmt.Println("RestoreShardViews")
+		shardID := blk.Header.ShardID
+		localnode.GetBlockchain().ShardChain[shardID] = blockchain.NewShardChain(int(shardID), multiview.NewMultiView(), localnode.GetBlockchain().GetConfig().BlockGen, localnode.GetBlockchain(), common.GetShardChainKey(shardID))
+		if err := localnode.GetBlockchain().RestoreShardViews(shardID); err != nil {
+			panic(err)
+		}
+		// TransactionStateDB[byte(blk.GetShardID())] = localnode.GetBlockchain().GetBestStateShard(blk.Header.ShardID).GetCopiedTransactionStateDB()
+	}
 }
 
 func GetCoinsByPrivateKey(keyset *incognitokey.KeySet, tokenID *common.Hash) ([]*privacy.OutputCoin, error) {

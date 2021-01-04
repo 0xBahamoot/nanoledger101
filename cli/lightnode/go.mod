@@ -9,6 +9,6 @@ require (
 	github.com/whyrusleeping/go-notifier v0.0.0-20170827234753-097c5d47330f // indirect
 )
 
-replace github.com/incognitochain/incognito-chain => /Users/truonglamchau/go/src/github.com/incognitochain/incognito-chain
+replace github.com/incognitochain/incognito-chain => /home/lam/go/src/github.com/incognitochain/incognito-chain
 
-replace github.com/0xkumi/incognito-dev-framework => /Users/truonglamchau/go/src/github.com/0xkumi/incognito-dev-framework
+replace github.com/0xkumi/incognito-dev-framework => /home/lam/go/src/github.com/0xkumi/incognito-dev-framework
