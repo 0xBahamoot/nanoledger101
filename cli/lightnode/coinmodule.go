@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"sync"
 
 	"github.com/incognitochain/incognito-chain/blockchain"
 	"github.com/incognitochain/incognito-chain/common"
@@ -24,6 +25,7 @@ var localnode interface {
 }
 var CoinProcessedState map[byte]uint64
 var TransactionStateDB map[byte]*statedb.StateDB
+var stateLock sync.Mutex
 
 func OnNewShardBlock(bc *blockchain.BlockChain, h common.Hash, height uint64) {
 	var blk blockchain.ShardBlock
@@ -69,7 +71,9 @@ func OnNewShardBlock(bc *blockchain.BlockChain, h common.Hash, height uint64) {
 	if err != nil {
 		panic(err)
 	}
+	stateLock.Lock()
 	CoinProcessedState[blk.Header.ShardID] = blk.Header.Height
+	stateLock.Unlock()
 	if (blk.Header.Height % 100) == 0 {
 		// fmt.Println("RestoreShardViews")
 		shardID := blk.Header.ShardID
@@ -77,7 +81,9 @@ func OnNewShardBlock(bc *blockchain.BlockChain, h common.Hash, height uint64) {
 		if err := localnode.GetBlockchain().RestoreShardViews(shardID); err != nil {
 			panic(err)
 		}
+		stateLock.Lock()
 		TransactionStateDB[byte(blk.GetShardID())] = localnode.GetBlockchain().GetBestStateShard(blk.Header.ShardID).GetCopiedTransactionStateDB()
+		stateLock.Unlock()
 	}
 }
 
@@ -101,14 +107,14 @@ func OnNewShardBlock(bc *blockchain.BlockChain, h common.Hash, height uint64) {
 // 	return outcoinList, nil
 // }
 
-func GetCoins(keyset *incognitokey.KeySet, tokenID *common.Hash) ([]*privacy.OutputCoin, error) {
+func GetCoins(keyset *incognitokey.KeySet, tokenID *common.Hash) ([]privacy.PlainCoin, error) {
 	lastByte := keyset.PaymentAddress.Pk[len(keyset.PaymentAddress.Pk)-1]
 	shardIDSender := common.GetShardIDFromLastByte(lastByte)
 	if tokenID == nil {
 		tokenID = &common.Hash{}
 		tokenID.SetBytes(common.PRVCoinID[:])
 	}
-	outcoinList, err := localnode.GetBlockchain().GetListOutputCoinsByKeyset(keyset, shardIDSender, tokenID)
+	outcoinList, err := localnode.GetBlockchain().TryGetAllOutputCoinsByKeyset(keyset, shardIDSender, tokenID, true)
 	if err != nil {
 		return nil, err
 	}
