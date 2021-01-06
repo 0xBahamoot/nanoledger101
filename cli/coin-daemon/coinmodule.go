@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
 	"strconv"
 	"sync"
 
@@ -14,7 +12,6 @@ import (
 	"github.com/incognitochain/incognito-chain/incognitokey"
 	"github.com/incognitochain/incognito-chain/multiview"
 	"github.com/incognitochain/incognito-chain/privacy"
-	"github.com/incognitochain/incognito-chain/wallet"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
@@ -149,59 +146,4 @@ func InitCoinsModule() {
 		localnode.OnNewBlockFromParticularHeight(i, int64(CoinProcessedState[byte(i)]), true, OnNewShardBlock)
 	}
 	go startService()
-}
-
-func startService() {
-	http.HandleFunc("/getbalance", getBalanceHandler)
-	http.HandleFunc("/getcoins", getCoinsHandler)
-	err := http.ListenAndServe("127.0.0.1:9000", nil)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	}
-}
-
-func getCoinsHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	key := r.URL.Query().Get("key")
-	wl, err := wallet.Base58CheckDeserialize(key)
-	if err != nil {
-		http.Error(w, "Unexpected error", http.StatusInternalServerError)
-		return
-	}
-	outcoins, err := GetCoins(&wl.KeySet, nil)
-	if err != nil {
-		http.Error(w, "Unexpected error", http.StatusInternalServerError)
-		return
-	}
-	coinsBytes, err := json.Marshal(outcoins)
-	if err != nil {
-		http.Error(w, "Unexpected error", http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(200)
-	_, err = w.Write(coinsBytes)
-	if err != nil {
-		panic(err)
-	}
-	return
-}
-
-func getBalanceHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	w.WriteHeader(200)
-	// _, err = w.Write(sysBytes)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	return
 }

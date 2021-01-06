@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+
 	node := devframework.NewAppNode("fullnode", devframework.TestNet2Param, true, false)
 	localnode = node
 	InitCoinsModule()
