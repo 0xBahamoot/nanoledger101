@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"time"
 
@@ -9,11 +10,25 @@ import (
 	"github.com/incognitochain/incognito-chain/wallet"
 )
 
-func main() {
+const (
+	MODELIGHT = "light"
+	MODERPC   = "rpc"
+	MODESIM   = "sim"
+)
 
-	node := devframework.NewAppNode("fullnode", devframework.TestNet2Param, true, false)
-	localnode = node
-	InitCoinsModule()
+func main() {
+	modeFlag := flag.String("mode", "light", "daemon mode")
+	flag.Parse()
+	switch *modeFlag {
+	case MODELIGHT:
+		node := devframework.NewAppNode("fullnode", devframework.TestNet2Param, true, false)
+		localnode = node
+		InitCoinsModule()
+	case MODERPC:
+	case MODESIM:
+	default:
+		panic("unknown mode")
+	}
 
 	wl, _ := wallet.Base58CheckDeserialize("112t8rnX5E2Mkqywuid4r4Nb2XTeLu3NJda43cuUM1ck2brpHrufi4Vi42EGybFhzfmouNbej81YJVoWewJqbR4rPhq2H945BXCLS2aDLBTA")
 	for {

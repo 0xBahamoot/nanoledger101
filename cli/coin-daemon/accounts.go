@@ -10,3 +10,7 @@ type Account struct {
 func GetAndSaveCoinsOfAccount() error {
 	return nil
 }
+
+func ImportAccount() error {
+	return nil
+}

@@ -84,26 +84,6 @@ func OnNewShardBlock(bc *blockchain.BlockChain, h common.Hash, height uint64) {
 	}
 }
 
-// func GetCoinsByPrivateKey(keyset *incognitokey.KeySet, tokenID *common.Hash) ([]*privacy.OutputCoin, error) {
-// 	lastByte := keyset.PaymentAddress.Pk[len(keyset.PaymentAddress.Pk)-1]
-// 	shardIDSender := common.GetShardIDFromLastByte(lastByte)
-// 	if tokenID == nil {
-// 		tokenID = &common.Hash{}
-// 		tokenID.SetBytes(common.PRVCoinID[:])
-// 	}
-// 	outcoinList, err := localnode.GetBlockchain().GetListOutputCoinsByKeyset(keyset, shardIDSender, tokenID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	amount := uint64(0)
-// 	for _, out := range outcoinList {
-// 		amount += out.CoinDetails.GetValue()
-// 	}
-// 	fmt.Println("amount", amount)
-// 	fmt.Println("len(outcoinList)", len(outcoinList))
-// 	return outcoinList, nil
-// }
-
 func GetCoins(keyset *incognitokey.KeySet, tokenID *common.Hash) ([]privacy.PlainCoin, error) {
 	lastByte := keyset.PaymentAddress.Pk[len(keyset.PaymentAddress.Pk)-1]
 	shardIDSender := common.GetShardIDFromLastByte(lastByte)

@@ -10,13 +10,17 @@ import (
 
 func startService() {
 	http.HandleFunc("/getbalance", getBalanceHandler)
-	http.HandleFunc("/getcoins", getCoinsHandler)
+	http.HandleFunc("/importkey", importKeyHandler)
+	http.HandleFunc("/getcoinstodecrypt", getCoinsHandler)
 	err := http.ListenAndServe("127.0.0.1:9000", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
 }
 
+func importKeyHandler(w http.ResponseWriter, r *http.Request) {
+	return
+}
 func getCoinsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	if r.Method != "GET" {
