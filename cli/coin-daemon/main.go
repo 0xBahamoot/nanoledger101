@@ -1,12 +1,15 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"time"
 
 	devframework "github.com/0xkumi/incognito-dev-framework"
 	"github.com/incognitochain/incognito-chain/common"
+	"github.com/incognitochain/incognito-chain/privacy/coin"
+	"github.com/incognitochain/incognito-chain/rpcserver/jsonresult"
 	"github.com/incognitochain/incognito-chain/wallet"
 )
 
@@ -25,7 +28,54 @@ func main() {
 		localnode = node
 		InitCoinsModule()
 	case MODERPC:
+		node := devframework.NewRPCClient("")
+		_ = node
 	case MODESIM:
+		node := devframework.NewStandaloneSimulation("simnode", devframework.Config{
+			ChainParam: devframework.NewChainParam(devframework.ID_TESTNET2).SetActiveShardNumber(2),
+			DisableLog: true,
+		})
+		node.GenerateBlock().NextRound()
+		node.ShowBalance(node.GenesisAccount)
+		acc1 := node.NewAccountFromShard(0)
+		acc2 := node.NewAccountFromShard(0)
+		fmt.Println(acc1.PrivateKey)
+		fmt.Println(acc2.PrivateKey)
+		node.ShowBalance(acc1)
+		node.ShowBalance(acc2)
+
+		node.SendPRV(node.GenesisAccount, acc1, 1000, acc2, 1000)
+		for i := 0; i < 10; i++ {
+			node.GenerateBlock().NextRound()
+		}
+
+		l, err := node.RPC.API_ListOutputCoins(acc1.PrivateKey)
+		if err != nil {
+			panic(err)
+		}
+		// fmt.Println(l.Outputs)
+		node.ShowBalance(acc1)
+		node.ShowBalance(acc2)
+		for s, out := range l.Outputs {
+			fmt.Println("outs ", s, len(out))
+			for _, c := range out {
+				cBytes, _ := json.Marshal(c)
+				fmt.Println(string(cBytes))
+				cV2, err := jsonresult.NewCoinFromJsonOutCoin(c)
+				if err != nil {
+					panic(err)
+				}
+				cv2 := cV2.(*coin.CoinV2)
+				cpl, err := cv2.Decrypt(acc1.Keyset)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println(string(cpl.GetKeyImage().MarshalText()))
+			}
+		}
+		select {}
+		// node.ApplyChain(0).GenerateBlock().NextRound()
+		return
 	default:
 		panic("unknown mode")
 	}
