@@ -176,6 +176,7 @@ const (
 	cmdGenAssetTag      = 0x10
 	cmdKeyImage         = 0x11
 	cmdSignMetaData     = 0x12
+	cmdGetOTAKey        = 0x13
 	cmdEncryptCoin      = 0x50
 	cmdDecryptCoin      = 0x51
 	cmdGetValidatorKey  = 0x90

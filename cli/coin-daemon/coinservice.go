@@ -99,7 +99,7 @@ func GetCoins(keyset *incognitokey.KeySet, tokenID *common.Hash) ([]privacy.Plai
 	return outcoinList, nil
 }
 
-func InitCoinsModule() {
+func initCoinService() {
 	CoinProcessedState = make(map[byte]uint64)
 	TransactionStateDB = make(map[byte]*statedb.StateDB)
 	//load CoinProcessedState

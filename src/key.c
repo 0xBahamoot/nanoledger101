@@ -12,7 +12,7 @@ static const uint32_t derivePath[BIP32_PATH] = {
   0 | HARDENED_OFFSET,
   0 | HARDENED_OFFSET,
   0 | HARDENED_OFFSET
-};
+  };
 
 
 
@@ -38,23 +38,23 @@ void incognito_gen_private_key(uint32_t account_number, privatekey_t* privKey) {
   cx_hmac_sha512(child_number, 4, privKey->chain_code, 32, buffer, CX_SHA512_SIZE);
 
   os_memmove(G_crypto_state_t.key.chain_code, buffer + 32, 32);
-}
+  }
 
 void incognito_init_private_key() {
   incognito_gen_private_key(2, &G_crypto_state_t.key);
   incognito_init_crypto_state();
-}
+  }
 
 void incognito_load_key(unsigned char* key[69], privatekey_t* privKey) {
 
-}
+  }
 
 void incognito_reset_crypto_state() {
   G_crypto_state_t.key.depth = 0;
   G_crypto_state_t.key.child_number = 0;
   os_memset(G_crypto_state_t.key.chain_code, 0, 32);
   os_memset(G_crypto_state_t.key.key, 0, 32);
-}
+  }
 
 void incognito_init_crypto_state() {
   incognito_keccak_F(G_crypto_state_t.key.key, 32, G_crypto_state_t.a);
@@ -65,14 +65,22 @@ void incognito_init_crypto_state() {
 
   // generate key protection
   incognito_aes_derive(&G_crypto_state_t.spk, G_crypto_state_t.key.chain_code, G_crypto_state_t.a, G_crypto_state_t.key.key);
-}
+  }
 
 // G_crypto_state_t.A
 void incognito_gen_public_view_key(unsigned char* key) {
   incognito_ecmul_G(key, G_crypto_state_t.a);
-}
+  }
 
 // G_crypto_state_t.B
 void incognito_gen_public_spend_key(unsigned char* key) {
   incognito_ecmul_G(key, G_crypto_state_t.key.key);
-}
+  }
+
+void incognito_gen_private_ota_key(unsigned char* key) {
+  unsigned char otakey[46];
+  os_memmove(otakey, G_crypto_state_t.key.key, 32);
+  os_memmove(otakey, "onetimeaddress", 14);
+  incognito_hash_to_scalar(key, otakey, 46);
+  // incognito_keccak_F(otakey, 46, key);
+  }

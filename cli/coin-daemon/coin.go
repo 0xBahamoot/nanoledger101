@@ -9,6 +9,11 @@ import (
 	"github.com/incognitochain/incognito-chain/privacy/operation"
 )
 
+type CoinData struct {
+	coin     *coin.CoinV2
+	KeyImage []byte
+}
+
 func DecryptCoinsV2(coinList []*coin.CoinV2, viewKey key.ViewingKey, OTAKey key.OTAKey) error {
 	for _, c := range coinList {
 		txConcealRandomPoint, err := c.GetTxRandom().GetTxConcealRandomPoint()
@@ -60,8 +65,10 @@ func GetKeyImageOfCoins(coinList []*coin.CoinV2, OTAKey key.OTAKey) error {
 		H := operation.HashToScalar(append(rK.ToBytesS(), common.Uint32ToBytes(index)...)) // Hash(r_ota*K, index)
 		_ = H
 		// compute this on ledger
-		// k := new(operation.Scalar).FromBytesS(privKey)
-		// return new(operation.Scalar).Add(H, k), nil // Hash(rK, index) + privSpend
+		// k := new(operation.Scalar).FromBytesS(privKey) //already done on ledger
+		// k1 := new(operation.Scalar).Add(H, k), nil // Hash(rK, index) + privSpend //try calculate on host
+		// Hp := operation.HashToPoint(c.GetPublicKey().ToBytesS())
+		// return new(operation.Point).ScalarMult(Hp, k1), nil
 		// ---------
 
 		//send to ledger to continue

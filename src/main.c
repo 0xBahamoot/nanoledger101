@@ -20,6 +20,7 @@ unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 #define INS_GEN_ATAG 0x10
 #define INS_KEY_IMG 0x11
 #define INS_SIGN_MTD 0x12
+#define INS_GET_OTA 0x13
 
 
 #define INS_ENC_COIN 0x50
@@ -81,7 +82,7 @@ void handleApdu(volatile unsigned int* flags, volatile unsigned int* tx) {
                     THROW(0x6D00);
                     break;
                 case INS_KEY_IMG:
-                    THROW(0x6D00);
+                    handleGenKeyImage(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
                     break;
                 case INS_ENC_COIN:
                     THROW(0x6D00);
@@ -94,6 +95,9 @@ void handleApdu(volatile unsigned int* flags, volatile unsigned int* tx) {
                     break;
                 case INS_SIGN_MTD:
                     THROW(0x6D00);
+                    break;
+                case INS_GET_OTA:
+                    handleGetOTA(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
                     break;
                 default:
                     THROW(0x6D00);

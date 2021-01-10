@@ -58,6 +58,16 @@ func (n *NanoS) GetViewKey() error {
 	return nil
 }
 
+func (n *NanoS) GetOTAKey() error {
+	resp, err := n.Exchange(cmdGetOTAKey, 0, 0, nil)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("ota: %v", resp)
+	// fmt.Println("viewkey:", string(resp[:]))
+	return nil
+}
+
 func (n *NanoS) ImportPrivateKey() error {
 	buf := new(bytes.Buffer)
 	// 000100000020812566598706f6f772fa0ec67e5efaac12c85a64b730518077a432fd3cb97a8c20063632b2a159e45002394460aee02de54d2b8926d236f45be2e077dcc81d0d04

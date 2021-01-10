@@ -146,5 +146,8 @@ void incognito_rng_mod_order(unsigned char* r);
 
 void incognito_get_subaddress_secret_key(unsigned char* sub_s, unsigned char* s, unsigned char* index);
 void incognito_doublesha256(unsigned char* buf, unsigned int len, unsigned char* out);
-void incognito_add_B58checksum(unsigned char *preEncode,unsigned int len, unsigned char* buf);
+void incognito_add_B58checksum(unsigned char* preEncode, unsigned int len, unsigned char* buf);
+void incognito_hash_to_scalar(unsigned char* scalar, unsigned char* raw, unsigned int raw_len);
+void incognito_hash_to_ec(unsigned char* ec, unsigned char* ec_pub);
+void incognito_generate_key_image(unsigned char* img, unsigned char* P, unsigned char* x);
 #endif

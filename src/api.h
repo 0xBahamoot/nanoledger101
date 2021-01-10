@@ -13,7 +13,7 @@ void handleGenAssetTag(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t dat
 
 void handleGenCommitment(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t dataLength, volatile unsigned int* flags, volatile unsigned int* tx);
 
-void handleGenImage(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t dataLength, volatile unsigned int* flags, volatile unsigned int* tx);
+void handleGenKeyImage(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t dataLength, volatile unsigned int* flags, volatile unsigned int* tx);
 
 void handleGenOTA(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t dataLength, volatile unsigned int* flags, volatile unsigned int* tx);
 
@@ -33,5 +33,6 @@ void handleGetValidator(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t da
 
 void handleSignMeta(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t dataLength, volatile unsigned int* flags, volatile unsigned int* tx);
 
+void handleGetOTA(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t dataLength, volatile unsigned int* flags, volatile unsigned int* tx);
 
 #endif
