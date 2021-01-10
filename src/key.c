@@ -80,7 +80,6 @@ void incognito_gen_public_spend_key(unsigned char* key) {
 void incognito_gen_private_ota_key(unsigned char* key) {
   unsigned char otakey[46];
   os_memmove(otakey, G_crypto_state_t.key.key, 32);
-  os_memmove(otakey, "onetimeaddress", 14);
+  os_memmove(otakey + 32, "onetimeaddress", 14);
   incognito_hash_to_scalar(key, otakey, 46);
-  // incognito_keccak_F(otakey, 46, key);
   }

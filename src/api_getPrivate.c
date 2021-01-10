@@ -11,6 +11,7 @@ static uint8_t set_result_get_private() {
   uint8_t tx = 0;
   const uint8_t private_size = 116;
   // G_io_apdu_buffer[tx++] = private_size;
+
   os_memmove(G_io_apdu_buffer + tx, processData, private_size);
   tx += private_size;
   os_memset(processData, 0, sizeof(processData));
@@ -62,45 +63,33 @@ void handleGetPrivate(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t data
   UNUSED(dataLength);
   UNUSED(p2);
   UNUSED(p1);
+  processData[0] = 0;
+  os_memmove(processData + 1, &G_crypto_state_t.key.depth, 1);
+  unsigned char child_number[4];
+  child_number[0] = (G_crypto_state_t.key.child_number >> 24) & 0xFF;
+  child_number[1] = (G_crypto_state_t.key.child_number >> 16) & 0xFF;
+  child_number[2] = (G_crypto_state_t.key.child_number >> 8) & 0xFF;
+  child_number[3] = G_crypto_state_t.key.child_number & 0xFF;
+  os_memmove(processData + 2, child_number, 4);
+  os_memmove(processData + 6, G_crypto_state_t.key.chain_code, 32);
+  processData[38] = 32;
+  os_memmove(processData + 39, G_crypto_state_t.key.key, 32);
 
+  uint8_t buffer[32];
 
-  BEGIN_TRY{
-          TRY {
-    // unsigned char privateKey[75];
-    processData[0] = 0;
-    os_memmove(processData + 1, &G_crypto_state_t.key.depth, 1);
-    unsigned char child_number[4];
-    child_number[0] = (G_crypto_state_t.key.child_number >> 24) & 0xFF;
-    child_number[1] = (G_crypto_state_t.key.child_number >> 16) & 0xFF;
-    child_number[2] = (G_crypto_state_t.key.child_number >> 8) & 0xFF;
-    child_number[3] = G_crypto_state_t.key.child_number & 0xFF;
-    os_memmove(processData + 2, child_number, 4);
-    os_memmove(processData + 6, G_crypto_state_t.key.chain_code, 32);
-    processData[38] = 32;
-    os_memmove(processData + 39, G_crypto_state_t.key.key, 32);
+  incognito_add_B58checksum(processData, 71, buffer);
 
-    uint8_t buffer[32];
+  unsigned char base58check[80];
+  os_memset(buffer, 0, 32);
+  base58check[0] = 0;
+  os_memmove(base58check + 1, processData, 75);
 
-    incognito_add_B58checksum(processData, 71, buffer);
+  incognito_add_B58checksum(base58check, 76, buffer);
 
-    unsigned char base58check[80];
-    os_memset(buffer, 0, 32);
-    base58check[0] = 0;
-    os_memmove(base58check + 1, processData, 75);
+  os_memset(processData, 0, sizeof(processData));
 
-    incognito_add_B58checksum(base58check, 76, buffer);
+  processData[encodeBase58(base58check, 80, (unsigned char*)processData, 116) + 3] = '\0';
 
-    os_memset(processData, 0, sizeof(processData));
-
-    processData[encodeBase58(base58check, 80, (unsigned char*)processData, 116) + 3] = '\0';
-
-    ux_flow_init(0, ux_display_private_flow, NULL);
-    *flags |= IO_ASYNCH_REPLY;
-                    CLOSE_TRY;
-                    return;
-} CATCH_OTHER(e) {
-                      sendResponse(0, false);
-                        return;
-                    } FINALLY{}
-    } END_TRY;
+  ux_flow_init(0, ux_display_private_flow, NULL);
+  *flags |= IO_ASYNCH_REPLY;
   }

@@ -526,7 +526,7 @@ void incognito_secret_key_to_public_key(unsigned char* ec_pub, unsigned char* ec
 void incognito_generate_key_image(unsigned char* img, unsigned char* P, unsigned char* x) {
     unsigned char I[32];
     incognito_hash_to_ec(I, P);
-    incognito_ecmul_k(img, I, x);
+    incognito_ecmul_k(img, P, x);
     }
 
 /* ======================================================================= */
