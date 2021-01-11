@@ -1,20 +1,21 @@
 package main
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/incognitochain/incognito-chain/incdb"
 )
 
-var accountDB *incdb.Database
-var keyimageDB *incdb.Database
+var accountDB incdb.Database
+var keyimageDB incdb.Database
 
 func initAccountDB(datadir string) error {
 	temp, err := incdb.Open("leveldb", filepath.Join(datadir, "accounts"))
 	if err != nil {
 		return err
 	}
-	accountDB = &temp
+	accountDB = temp
 	return nil
 }
 
@@ -23,7 +24,7 @@ func initKeyimageDB(datadir string) error {
 	if err != nil {
 		return err
 	}
-	keyimageDB = &temp
+	keyimageDB = temp
 	return nil
 }
 
@@ -37,7 +38,19 @@ func loadAccountsFromDB() ([]*Account, error) {
 	return result, nil
 }
 
-func saveKeyImageList(keyImage [][]byte, paymentAddrHash string, commitmentHash string) error {
+func saveKeyImageList(keyImages map[string][]byte, paymentAddrHash string) error {
+	batch := keyimageDB.NewBatch()
+
+	for commitmentHash, keyImage := range keyImages {
+		key := fmt.Sprintf("km-%s-%s", paymentAddrHash, commitmentHash)
+		err := batch.Put([]byte(key), keyImage)
+		if err != nil {
+			return err
+		}
+	}
+	if err := batch.Write(); err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -129,11 +129,19 @@ func (n *NanoS) GenAssetTag() error {
 }
 
 func (n *NanoS) GenKeyImage() error {
-	resp, err := n.Exchange(cmdKeyImage, 0, 0, nil)
+	buf := new(bytes.Buffer)
+	bs, _ := hex.DecodeString("c4541151e39bb43e7b00ad6a1d999d609f5939ca622a9db7b7391c5190eea909")
+	buf.Write(bs)
+	bs1, _ := hex.DecodeString("17fd6aff8fecd18243af1a83dab0e47ca5fafec256ba497b3136a6b3f68eecb1")
+	buf.Write(bs1)
+
+	resp, err := n.Exchange(cmdKeyImage, 0, 0, buf.Next(255))
 	if err != nil {
 		return err
 	}
-	_ = resp
+	// fmt.Println("coin_pubkey", hex.EncodeToString(resp[:32]))
+	// fmt.Println("I", hex.EncodeToString(resp[32:len(resp)-1]))
+	fmt.Println("I", hex.EncodeToString(resp))
 	return nil
 }
 

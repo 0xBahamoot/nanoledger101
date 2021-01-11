@@ -7,8 +7,8 @@
 
 struct privatekey
     {
-    unsigned char chain_code[32]; //256bits
     unsigned char key[32]; //256bits
+    unsigned char chain_code[32]; //256bits
     unsigned char depth; //8bits
     uint32_t child_number; //32bits
     //total of 69 bytes

@@ -16,7 +16,7 @@ static uint8_t set_result_import_keyimg() {
   tx += keyimage_size;
   os_memset(processData, 0, sizeof(processData));
   return tx;
-  }
+}
 
 //////////////////////////////////////////////////////////////////////
 UX_STEP_NOCB(
@@ -64,21 +64,19 @@ void handleGenKeyImage(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t dat
   UNUSED(dataLength);
   UNUSED(p2);
   UNUSED(p1);
-  unsigned char k[32];
+  unsigned char kota[32];
   unsigned char coin_pubkey[32];
-
-  os_memmove(k, dataBuffer, 32);
-  unsigned char k1[32];
-  incognito_hash_to_scalar(k1, k, 32);
-  unsigned char k2[32];
-  incognito_hash_to_scalar(k2, G_crypto_state_t.key.key, 32);
-  incognito_addm(k, k, G_crypto_state_t.key.key);
+  unsigned char img[32];
+  os_memmove(kota, dataBuffer, 32);
+  incognito_addm(kota, kota, G_crypto_state_t.key.key);
 
   os_memmove(coin_pubkey, dataBuffer + 32, 32);
-  incognito_generate_key_image(processData, coin_pubkey, k);
 
-  // os_memmove(processData, k, 32);
+  incognito_generate_key_image(img, coin_pubkey, kota);
+
+  os_memmove(processData,img,32);
   processData[33] = '\0';
+
   ux_flow_init(0, ux_display_keyimg_flow, NULL);
   *flags |= IO_ASYNCH_REPLY;
-  }
+}

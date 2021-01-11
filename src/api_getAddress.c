@@ -90,7 +90,6 @@ void handleGetAddress(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t data
   incognito_add_B58checksum(base58check, 72, buffer);
 
 
-
   processData[encodeBase58(base58check, 76, (unsigned char*)processData, 120) + 3] = '\0';
 
   ux_flow_init(0, ux_display_public_flow, NULL);

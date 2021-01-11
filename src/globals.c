@@ -8,7 +8,8 @@ bolos_ux_params_t G_ux_params;
 // display stepped screens
 unsigned int ux_step;
 unsigned int ux_step_count;
-unsigned char processData[256];
+unsigned char processData[300];
+// unsigned char crytoData[300];
 
 const internalStorage_t N_storage_real;
 

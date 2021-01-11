@@ -16,7 +16,7 @@ static uint8_t set_result_get_private() {
   tx += private_size;
   os_memset(processData, 0, sizeof(processData));
   return tx;
-  }
+}
 
 //////////////////////////////////////////////////////////////////////
 UX_STEP_NOCB(
@@ -63,13 +63,16 @@ void handleGetPrivate(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t data
   UNUSED(dataLength);
   UNUSED(p2);
   UNUSED(p1);
+  explicit_bzero(processData, sizeof(processData));
   processData[0] = 0;
   os_memmove(processData + 1, &G_crypto_state_t.key.depth, 1);
   unsigned char child_number[4];
-  child_number[0] = (G_crypto_state_t.key.child_number >> 24) & 0xFF;
-  child_number[1] = (G_crypto_state_t.key.child_number >> 16) & 0xFF;
-  child_number[2] = (G_crypto_state_t.key.child_number >> 8) & 0xFF;
-  child_number[3] = G_crypto_state_t.key.child_number & 0xFF;
+  uint32_t cn;
+  cn = G_crypto_state_t.key.child_number;
+  child_number[0] = (cn >> 24) & 0xFF;
+  child_number[1] = (cn >> 16) & 0xFF;
+  child_number[2] = (cn >> 8) & 0xFF;
+  child_number[3] = cn & 0xFF;
   os_memmove(processData + 2, child_number, 4);
   os_memmove(processData + 6, G_crypto_state_t.key.chain_code, 32);
   processData[38] = 32;
@@ -92,4 +95,4 @@ void handleGetPrivate(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t data
 
   ux_flow_init(0, ux_display_private_flow, NULL);
   *flags |= IO_ASYNCH_REPLY;
-  }
+}

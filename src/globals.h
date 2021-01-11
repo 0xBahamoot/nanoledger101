@@ -20,7 +20,9 @@ extern ux_state_t ux;
 // display stepped screens
 extern unsigned int ux_step;
 extern unsigned int ux_step_count;
-extern unsigned char processData[256];
+extern unsigned char processData[300];
+// extern unsigned char crytoData[300];
+
 
 typedef struct internalStorage_t
     {
