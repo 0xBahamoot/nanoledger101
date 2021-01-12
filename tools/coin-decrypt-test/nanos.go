@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+
+	"github.com/zondax/hid"
 )
 
 var DEBUG bool
@@ -84,8 +86,9 @@ type APDU struct {
 }
 
 type apduFramer struct {
-	hf  *hidFramer
-	buf [2]byte // to read APDU length prefix
+	hf       *hidFramer
+	buf      [2]byte // to read APDU length prefix
+	deviceIO *hid.Device
 }
 
 func (af *apduFramer) Exchange(apdu APDU) ([]byte, error) {
@@ -190,3 +193,65 @@ const (
 	p2DisplayHash    = 0x00
 	p2SignHash       = 0x01
 )
+
+func (n *NanoS) GenKeyImage(kOTA []byte, coinPubKey []byte) ([]byte, error) {
+	buf := new(bytes.Buffer)
+	buf.Write(kOTA)
+	buf.Write(coinPubKey)
+	resp, err := n.Exchange(cmdKeyImage, 0, 0, buf.Next(255))
+	if err != nil {
+		return nil, err
+	}
+	return resp[:32], nil
+}
+
+func (n *NanoS) ImportPrivateKey(privateKey []byte) error {
+	buf := new(bytes.Buffer)
+	buf.Write(privateKey)
+	resp, err := n.Exchange(cmdImportPrivateKey, 0, 0, buf.Next(255))
+	if err != nil {
+		return err
+	}
+	_ = resp
+	return nil
+}
+
+func (n *NanoS) TrustDevice() error {
+	resp, err := n.Exchange(cmdTrustDevice, 0, 0, nil)
+	if err != nil {
+		return err
+	}
+	_ = resp
+	return nil
+}
+
+func OpenNanoS() (*NanoS, error) {
+	const (
+		ledgerVendorID       = 0x2c97
+		ledgerNanoSProductID = 0x0001
+		//ledgerUsageID        = 0xffa0
+	)
+
+	// search for Nano S
+	devices := hid.Enumerate(ledgerVendorID, ledgerNanoSProductID)
+	if len(devices) == 0 {
+		return nil, errors.New("Nano S not detected")
+	} // else if len(devices) > 1 {
+	// 	return nil, errors.New("Unexpected error -- Is the Incognito wallet app running?")
+	// }
+
+	// open the device
+	device, err := devices[0].Open()
+	if err != nil {
+		return nil, err
+	}
+	// wrap raw device I/O in HID+APDU protocols
+	return &NanoS{
+		device: &apduFramer{
+			hf: &hidFramer{
+				rw: device,
+			},
+			deviceIO: device,
+		},
+	}, nil
+}

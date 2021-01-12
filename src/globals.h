@@ -21,8 +21,7 @@ extern ux_state_t ux;
 extern unsigned int ux_step;
 extern unsigned int ux_step_count;
 extern unsigned char processData[300];
-// extern unsigned char crytoData[300];
-
+extern unsigned char trust_host;
 
 typedef struct internalStorage_t
     {

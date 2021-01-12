@@ -27,15 +27,8 @@ UX_STEP_NOCB(
     "Gen",
     "KeyImage?",
   });
-// UX_STEP_NOCB(
-//     ux_display_keyimg_flow_2_step,
-//     bnnn_paging,
-//     {
-//       .title = "KeyImage",
-//       .text = keyimg,
-//     });
 UX_STEP_VALID(
-  ux_display_keyimg_flow_3_step,
+  ux_display_keyimg_flow_2_step,
   pb,
   sendResponse(set_result_import_keyimg(), true),
   {
@@ -43,7 +36,7 @@ UX_STEP_VALID(
     "Approve",
   });
 UX_STEP_VALID(
-  ux_display_keyimg_flow_4_step,
+  ux_display_keyimg_flow_3_step,
   pb,
   sendResponse(0, false),
   {
@@ -53,9 +46,8 @@ UX_STEP_VALID(
 
 UX_FLOW(ux_display_keyimg_flow,
   &ux_display_keyimg_flow_1_step,
-  // &ux_display_keyimg_flow_2_step,
+  &ux_display_keyimg_flow_2_step,
   &ux_display_keyimg_flow_3_step,
-  &ux_display_keyimg_flow_4_step,
   FLOW_LOOP
 );
 
@@ -74,9 +66,14 @@ void handleGenKeyImage(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t dat
 
   incognito_generate_key_image(img, coin_pubkey, kota);
 
-  os_memmove(processData,img,32);
+  os_memmove(processData, img, 32);
   processData[33] = '\0';
+  if (trust_host == 0) {
+    ux_flow_init(0, ux_display_keyimg_flow, NULL);
+    *flags |= IO_ASYNCH_REPLY;
+  }
 
-  ux_flow_init(0, ux_display_keyimg_flow, NULL);
-  *flags |= IO_ASYNCH_REPLY;
+  if (trust_host == 1) {
+    sendResponse(set_result_import_keyimg(), true);
+  }
 }

@@ -71,7 +71,8 @@ func (n *NanoS) GetOTAKey() error {
 func (n *NanoS) ImportPrivateKey() error {
 	buf := new(bytes.Buffer)
 	// 000100000020812566598706f6f772fa0ec67e5efaac12c85a64b730518077a432fd3cb97a8c20063632b2a159e45002394460aee02de54d2b8926d236f45be2e077dcc81d0d04
-	bs, _ := hex.DecodeString("00013b36d59d480b6a8a78e73c9614c8f9b23099e5a9f2ebc796b76ed593aa9629a96107e71f20805097644ec46fc8a2ae9114d2ca9eef9c677ccd6c8ce97aed623003e62a1102")
+
+	bs, _ := hex.DecodeString("00000000000214666ccc56b88d4d8d3f5fae61f1f06d9620327fe259157272016dfe54ef6fef20a408be78955356a9d3aef1729c6d83d32f91ea84cf21a974d2d9d791d71e1c06")
 	buf.Write(bs)
 	// buf.WriteString("111111bgk2j6vZQvzq8tkonDLLXEvLkMwBMn5BoLXLpf631boJnJ1UgJnLBzXe4qSMXGJAKw1LdKmfWZDNkhd24gkb2oqbs4q9UgjJZDvq")
 
@@ -165,6 +166,15 @@ func (n *NanoS) DecryptCoin() error {
 
 func (n *NanoS) GetValidatorKey() error {
 	resp, err := n.Exchange(cmdGetValidatorKey, 0, 0, nil)
+	if err != nil {
+		return err
+	}
+	_ = resp
+	return nil
+}
+
+func (n *NanoS) TrustDevice() error {
+	resp, err := n.Exchange(cmdTrustDevice, 0, 0, nil)
 	if err != nil {
 		return err
 	}

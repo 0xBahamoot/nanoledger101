@@ -89,6 +89,7 @@ Generates an address using the public key with the specified index.
 	decryptCoinUsage   = ``
 	getValidatorUsage  = ``
 	getOTAKeyUsage     = ``
+	trustDeviceUsage   = ``
 )
 
 func main() {
@@ -112,7 +113,7 @@ func main() {
 	decryptCoinCmd := flagg.New("decoin", decryptCoinUsage)
 	getValidatorCmd := flagg.New("getvalidator", getValidatorUsage)
 	getOTAKeyCmd := flagg.New("ota", getOTAKeyUsage)
-
+	trustDeviceCmd := flagg.New("trust", trustDeviceUsage)
 	cmd := flagg.Parse(flagg.Tree{
 		Cmd: rootCmd,
 		Sub: []flagg.Tree{
@@ -131,6 +132,7 @@ func main() {
 			{Cmd: decryptCoinCmd},
 			{Cmd: getValidatorCmd},
 			{Cmd: getOTAKeyCmd},
+			{Cmd: trustDeviceCmd},
 		},
 	})
 	args := cmd.Args()
@@ -240,6 +242,11 @@ func main() {
 		}
 	case getOTAKeyCmd:
 		err := nanos.GetValidatorKey()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	case trustDeviceCmd:
+		err := nanos.TrustDevice()
 		if err != nil {
 			log.Fatalln(err)
 		}

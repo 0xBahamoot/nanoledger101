@@ -28,6 +28,7 @@ unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
 #define INS_GET_VLD 0x90
 
+#define INS_TRUST_DVC 0x60
 
 #define OFFSET_CLA 0
 #define OFFSET_INS 1
@@ -99,6 +100,9 @@ void handleApdu(volatile unsigned int* flags, volatile unsigned int* tx) {
                 case INS_GET_OTA:
                     handleGetOTA(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
                     break;
+                case INS_TRUST_DVC:
+                    handleTrustDevice(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
+                    break;
                 default:
                     THROW(0x6D00);
                     break;
@@ -128,9 +132,9 @@ void handleApdu(volatile unsigned int* flags, volatile unsigned int* tx) {
     }
     FINALLY {
     }
-        }
-    END_TRY;
     }
+    END_TRY;
+}
 
 void app_main(void) {
     volatile unsigned int rx = 0;
@@ -191,18 +195,18 @@ void app_main(void) {
             }
             FINALLY {
             }
-            }
-        END_TRY;
         }
+        END_TRY;
+    }
 
     //return_to_dashboard:
     return;
-    }
+}
 
 // override point, but nothing more to do
 void io_seproxyhal_display(const bagl_element_t* element) {
     io_seproxyhal_display_default((bagl_element_t*)element);
-    }
+}
 
 unsigned char io_event(unsigned char channel) {
     // unsigned int s_before;
@@ -214,48 +218,48 @@ unsigned char io_event(unsigned char channel) {
 
     // can't have more than one tag in the reply, not supported yet.
     switch (G_io_seproxyhal_spi_buffer[0]) {
-        case SEPROXYHAL_TAG_FINGER_EVENT:
-            UX_FINGER_EVENT(G_io_seproxyhal_spi_buffer);
-            break;
+    case SEPROXYHAL_TAG_FINGER_EVENT:
+        UX_FINGER_EVENT(G_io_seproxyhal_spi_buffer);
+        break;
 
-        case SEPROXYHAL_TAG_BUTTON_PUSH_EVENT:
-            UX_BUTTON_PUSH_EVENT(G_io_seproxyhal_spi_buffer);
-            break;
+    case SEPROXYHAL_TAG_BUTTON_PUSH_EVENT:
+        UX_BUTTON_PUSH_EVENT(G_io_seproxyhal_spi_buffer);
+        break;
 
-        case SEPROXYHAL_TAG_STATUS_EVENT:
-            if (G_io_apdu_media == IO_APDU_MEDIA_USB_HID && !(U4BE(G_io_seproxyhal_spi_buffer, 3) & SEPROXYHAL_TAG_STATUS_EVENT_FLAG_USB_POWERED)) {
-                THROW(EXCEPTION_IO_RESET);
-                }
-            // no break is intentional
-        default:
-            UX_DEFAULT_EVENT();
-            break;
-
-        case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
-            UX_DISPLAYED_EVENT({});
-            break;
-
-        case SEPROXYHAL_TAG_TICKER_EVENT:
-            UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer,
-                {
-    #ifndef TARGET_NANOX
-                    if (UX_ALLOWED) {
-                        if (ux_step_count) {
-                            // prepare next screen
-                            ux_step = (ux_step + 1) % ux_step_count;
-                            // redisplay screen
-                            UX_REDISPLAY();
-                            }
-                        }
-        #endif // TARGET_NANOX
-                });
-            break;
+    case SEPROXYHAL_TAG_STATUS_EVENT:
+        if (G_io_apdu_media == IO_APDU_MEDIA_USB_HID && !(U4BE(G_io_seproxyhal_spi_buffer, 3) & SEPROXYHAL_TAG_STATUS_EVENT_FLAG_USB_POWERED)) {
+            THROW(EXCEPTION_IO_RESET);
         }
+        // no break is intentional
+    default:
+        UX_DEFAULT_EVENT();
+        break;
+
+    case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
+        UX_DISPLAYED_EVENT({});
+        break;
+
+    case SEPROXYHAL_TAG_TICKER_EVENT:
+        UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer,
+            {
+#ifndef TARGET_NANOX
+                if (UX_ALLOWED) {
+                    if (ux_step_count) {
+                        // prepare next screen
+                        ux_step = (ux_step + 1) % ux_step_count;
+                        // redisplay screen
+                        UX_REDISPLAY();
+                        }
+                    }
+    #endif // TARGET_NANOX
+            });
+        break;
+    }
 
     // close the event if not done previously (by a display or whatever)
     if (!io_seproxyhal_spi_is_status_sent()) {
         io_seproxyhal_general_status();
-        }
+    }
 
     // s_after = os_global_pin_is_validated();
 
@@ -271,35 +275,35 @@ unsigned char io_event(unsigned char channel) {
 
     // command has been processed, DO NOT reset the current APDU transport
     return 1;
-    }
+}
 
 
 unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
     switch (channel & ~(IO_FLAGS)) {
-        case CHANNEL_KEYBOARD:
-            break;
+    case CHANNEL_KEYBOARD:
+        break;
 
-            // multiplexed io exchange over a SPI channel and TLV encapsulated protocol
-        case CHANNEL_SPI:
-            if (tx_len) {
-                io_seproxyhal_spi_send(G_io_apdu_buffer, tx_len);
+        // multiplexed io exchange over a SPI channel and TLV encapsulated protocol
+    case CHANNEL_SPI:
+        if (tx_len) {
+            io_seproxyhal_spi_send(G_io_apdu_buffer, tx_len);
 
-                if (channel & IO_RESET_AFTER_REPLIED) {
-                    reset();
-                    }
-                return 0; // nothing received from the master so far (it's a tx
-                        // transaction)
-                }
-            else {
-                return io_seproxyhal_spi_recv(G_io_apdu_buffer,
-                    sizeof(G_io_apdu_buffer), 0);
-                }
-
-        default:
-            THROW(INVALID_PARAMETER);
+            if (channel & IO_RESET_AFTER_REPLIED) {
+                reset();
+            }
+            return 0; // nothing received from the master so far (it's a tx
+                    // transaction)
         }
-    return 0;
+        else {
+            return io_seproxyhal_spi_recv(G_io_apdu_buffer,
+                sizeof(G_io_apdu_buffer), 0);
+        }
+
+    default:
+        THROW(INVALID_PARAMETER);
     }
+    return 0;
+}
 
 
 void app_exit(void) {
@@ -307,13 +311,13 @@ void app_exit(void) {
     BEGIN_TRY_L(exit) {
         TRY_L(exit) {
             os_sched_exit(-1);
-            }
+        }
         FINALLY_L(exit) {
 
-            }
         }
-    END_TRY_L(exit);
     }
+    END_TRY_L(exit);
+}
 
 void nv_app_state_init() {
     if (N_storage.initialized != 0x01) {
@@ -324,13 +328,13 @@ void nv_app_state_init() {
         storage.setting_4 = 0x00;
         storage.initialized = 0x01;
         nvm_write((internalStorage_t*)&N_storage, (void*)&storage, sizeof(internalStorage_t));
-        }
+    }
     setting_1 = N_storage.setting_1;
     setting_2 = N_storage.setting_2;
     setting_3 = N_storage.setting_3;
     setting_4 = N_storage.setting_4;
     incognito_init_private_key();
-    }
+}
 
 __attribute__((section(".boot"))) int main(void) {
     // exit critical section
@@ -368,9 +372,9 @@ __attribute__((section(".boot"))) int main(void) {
             }
             FINALLY {
             }
-            }
-        END_TRY;
         }
+        END_TRY;
+    }
     app_exit();
     return 0;
-    }
+}
