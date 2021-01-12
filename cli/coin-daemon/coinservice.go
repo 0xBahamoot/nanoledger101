@@ -127,3 +127,7 @@ func initCoinService() {
 	}
 	go startService()
 }
+
+func initCoinServiceRPCMode() {
+
+}

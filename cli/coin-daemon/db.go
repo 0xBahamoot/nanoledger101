@@ -34,7 +34,11 @@ func saveAccount(account Account) error {
 
 func loadAccountsFromDB() ([]*Account, error) {
 	var result []*Account
-
+	accountListLck.RLock()
+	for _, account := range accountList {
+		_ = account
+	}
+	accountListLck.RUnlock()
 	return result, nil
 }
 
