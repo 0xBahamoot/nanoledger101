@@ -6,7 +6,8 @@
 
 // static char ota[32];
 
-static uint8_t set_result_get_ota() {
+static uint8_t set_result_get_ota()
+{
   uint8_t tx = 0;
   const uint8_t ota_size = 32;
   // G_io_apdu_buffer[tx++] = ota_size;
@@ -14,17 +15,17 @@ static uint8_t set_result_get_ota() {
   tx += ota_size;
   os_memset(processData, 0, sizeof(processData));
   return tx;
-  }
+}
 
 //////////////////////////////////////////////////////////////////////
 UX_STEP_NOCB(
-  ux_display_ota_flow_1_step,
-  pnn,
-  {
-    &C_icon_warning,
-    "Export",
-    "OTAkey?",
-  });
+    ux_display_ota_flow_1_step,
+    pnn,
+    {
+        &C_icon_warning,
+        "Export",
+        "OTAkey?",
+    });
 // UX_STEP_NOCB(
 //   ux_display_ota_flow_2_step,
 //   bnnn_paging,
@@ -33,31 +34,31 @@ UX_STEP_NOCB(
 //     .text = processData,
 //   });
 UX_STEP_VALID(
-  ux_display_ota_flow_3_step,
-  pb,
-  sendResponse(set_result_get_ota(), true),
-  {
-    &C_icon_validate_14,
-    "Approve",
-  });
+    ux_display_ota_flow_3_step,
+    pb,
+    sendResponse(set_result_get_ota(), true),
+    {
+        &C_icon_validate_14,
+        "Approve",
+    });
 UX_STEP_VALID(
-  ux_display_ota_flow_4_step,
-  pb,
-  sendResponse(0, false),
-  {
-    &C_icon_crossmark,
-    "Reject",
-  });
+    ux_display_ota_flow_4_step,
+    pb,
+    sendResponse(0, false),
+    {
+        &C_icon_crossmark,
+        "Reject",
+    });
 
 UX_FLOW(ux_display_ota_flow,
-  &ux_display_ota_flow_1_step,
-  // &ux_display_ota_flow_2_step,
-  &ux_display_ota_flow_3_step,
-  &ux_display_ota_flow_4_step,
-  FLOW_LOOP
-);
+        &ux_display_ota_flow_1_step,
+        // &ux_display_ota_flow_2_step,
+        &ux_display_ota_flow_3_step,
+        &ux_display_ota_flow_4_step,
+        FLOW_LOOP);
 
-void handleGetOTA(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t dataLength, volatile unsigned int* flags, volatile unsigned int* tx) {
+void handleGetOTA(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t dataLength, volatile unsigned int *flags, volatile unsigned int *tx)
+{
   UNUSED(dataLength);
   UNUSED(p2);
   UNUSED(p1);
@@ -67,4 +68,4 @@ void handleGetOTA(uint8_t p1, uint8_t p2, uint8_t* dataBuffer, uint16_t dataLeng
   // processData[33] = '\0';
   ux_flow_init(0, ux_display_ota_flow, NULL);
   *flags |= IO_ASYNCH_REPLY;
-  }
+}

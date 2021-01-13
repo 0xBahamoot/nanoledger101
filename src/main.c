@@ -22,7 +22,6 @@ unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 #define INS_SIGN_MTD 0x12
 #define INS_GET_OTA 0x13
 
-
 #define INS_ENC_COIN 0x50
 #define INS_DEC_COIN 0x51
 
@@ -37,82 +36,90 @@ unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 #define OFFSET_LC 4
 #define OFFSET_CDATA 5
 
-void handleApdu(volatile unsigned int* flags, volatile unsigned int* tx) {
+void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx)
+{
     unsigned short sw = 0;
 
-    BEGIN_TRY{
-        TRY {
-            if (G_io_apdu_buffer[OFFSET_CLA] != CLA) {
-            THROW(0x6E00);
+    BEGIN_TRY
+    {
+        TRY
+        {
+            if (G_io_apdu_buffer[OFFSET_CLA] != CLA)
+            {
+                THROW(0x6E00);
             }
 
-            switch (G_io_apdu_buffer[OFFSET_INS]) {
+            switch (G_io_apdu_buffer[OFFSET_INS])
+            {
 
-                case INS_GET_APP_VERSION:
-                    G_io_apdu_buffer[0] = LEDGER_MAJOR_VERSION;
-                    G_io_apdu_buffer[1] = LEDGER_MINOR_VERSION;
-                    G_io_apdu_buffer[2] = LEDGER_PATCH_VERSION;
-                    *tx = 3;
-                    THROW(0x9000);
-                    break;
-                case INS_GET_ADDR:
-                    handleGetAddress(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
-                    break;
-                case INS_GET_PRIV:
-                    handleGetPrivate(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
-                    break;
-                case INS_IMPORT_PRIV:
-                    handleImportPrivate(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
-                    break;
-                case INS_GET_VIEW:
-                    handleGetView(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
-                    break;
-                case INS_GEN_CCM:
-                    THROW(0x6D00);
-                    break;
-                case INS_GEN_OTA:
-                    THROW(0x6D00);
-                    break;
-                case INS_GEN_RSIG:
-                    THROW(0x6D00);
-                    break;
-                case INS_GEN_PROF:
-                    THROW(0x6D00);
-                    break;
-                case INS_GEN_ATAG:
-                    THROW(0x6D00);
-                    break;
-                case INS_KEY_IMG:
-                    handleGenKeyImage(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
-                    break;
-                case INS_ENC_COIN:
-                    THROW(0x6D00);
-                    break;
-                case INS_DEC_COIN:
-                    THROW(0x6D00);
-                    break;
-                case INS_GET_VLD:
-                    THROW(0x6D00);
-                    break;
-                case INS_SIGN_MTD:
-                    THROW(0x6D00);
-                    break;
-                case INS_GET_OTA:
-                    handleGetOTA(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
-                    break;
-                case INS_TRUST_DVC:
-                    handleTrustDevice(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
-                    break;
-                default:
-                    THROW(0x6D00);
-                    break;
+            case INS_GET_APP_VERSION:
+                G_io_apdu_buffer[0] = LEDGER_MAJOR_VERSION;
+                G_io_apdu_buffer[1] = LEDGER_MINOR_VERSION;
+                G_io_apdu_buffer[2] = LEDGER_PATCH_VERSION;
+                *tx = 3;
+                THROW(0x9000);
+                break;
+            case INS_GET_ADDR:
+                handleGetAddress(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
+                break;
+            case INS_GET_PRIV:
+                handleGetPrivate(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
+                break;
+            case INS_IMPORT_PRIV:
+                handleImportPrivate(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
+                break;
+            case INS_GET_VIEW:
+                handleGetView(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
+                break;
+            case INS_GEN_CCM:
+                THROW(0x6D00);
+                break;
+            case INS_GEN_OTA:
+                THROW(0x6D00);
+                break;
+            case INS_GEN_RSIG:
+                THROW(0x6D00);
+                break;
+            case INS_GEN_PROF:
+                THROW(0x6D00);
+                break;
+            case INS_GEN_ATAG:
+                THROW(0x6D00);
+                break;
+            case INS_KEY_IMG:
+                handleGenKeyImage(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
+                break;
+            case INS_ENC_COIN:
+                THROW(0x6D00);
+                break;
+            case INS_DEC_COIN:
+                THROW(0x6D00);
+                break;
+            case INS_GET_VLD:
+                THROW(0x6D00);
+                break;
+            case INS_SIGN_MTD:
+                THROW(0x6D00);
+                break;
+            case INS_GET_OTA:
+                handleGetOTA(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
+                break;
+            case INS_TRUST_DVC:
+                handleTrustDevice(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
+                break;
+            default:
+                THROW(0x6D00);
+                break;
             }
         }
-        CATCH(EXCEPTION_IO_RESET) {
+        CATCH(EXCEPTION_IO_RESET)
+        {
             THROW(EXCEPTION_IO_RESET);
         }
-        CATCH_OTHER(e) {
-        switch (e & 0xF000) {
+        CATCH_OTHER(e)
+        {
+            switch (e & 0xF000)
+            {
             case 0x6000:
                 sw = e;
                 break;
@@ -125,18 +132,20 @@ void handleApdu(volatile unsigned int* flags, volatile unsigned int* tx) {
                 sw = 0x6800 | (e & 0x7FF);
                 break;
             }
-        // Unexpected exception => report
-        G_io_apdu_buffer[*tx] = sw >> 8;
-        G_io_apdu_buffer[*tx + 1] = sw;
-        *tx += 2;
-    }
-    FINALLY {
-    }
+            // Unexpected exception => report
+            G_io_apdu_buffer[*tx] = sw >> 8;
+            G_io_apdu_buffer[*tx + 1] = sw;
+            *tx += 2;
+        }
+        FINALLY
+        {
+        }
     }
     END_TRY;
 }
 
-void app_main(void) {
+void app_main(void)
+{
     volatile unsigned int rx = 0;
     volatile unsigned int tx = 0;
     volatile unsigned int flags = 0;
@@ -147,11 +156,14 @@ void app_main(void) {
     // sure the io_event is called with a
     // switch event, before the apdu is replied to the bootloader. This avoid
     // APDU injection faults.
-    for (;;) {
+    for (;;)
+    {
         volatile unsigned short sw = 0;
 
-        BEGIN_TRY{
-            TRY {
+        BEGIN_TRY
+        {
+            TRY
+            {
                 rx = tx;
                 tx = 0; // ensure no race in catch_other if io_exchange throws
                         // an error
@@ -160,7 +172,8 @@ void app_main(void) {
 
                 // no apdu received, well, reset the session, and reset the
                 // bootloader configuration
-                if (rx == 0) {
+                if (rx == 0)
+                {
                     THROW(0x6982);
                 }
 
@@ -168,24 +181,28 @@ void app_main(void) {
 
                 handleApdu(&flags, &tx);
             }
-            CATCH(EXCEPTION_IO_RESET) {
-              THROW(EXCEPTION_IO_RESET);
+            CATCH(EXCEPTION_IO_RESET)
+            {
+                THROW(EXCEPTION_IO_RESET);
             }
-            CATCH_OTHER(e) {
-                switch (e & 0xF000) {
-                    case 0x6000:
-                        sw = e;
-                        break;
-                    case 0x9000:
-                        // All is well
-                        sw = e;
-                        break;
-                    default:
-                        // Internal error
-                        sw = 0x6800 | (e & 0x7FF);
-                        break;
+            CATCH_OTHER(e)
+            {
+                switch (e & 0xF000)
+                {
+                case 0x6000:
+                    sw = e;
+                    break;
+                case 0x9000:
+                    // All is well
+                    sw = e;
+                    break;
+                default:
+                    // Internal error
+                    sw = 0x6800 | (e & 0x7FF);
+                    break;
                 }
-                if (e != 0x9000) {
+                if (e != 0x9000)
+                {
                     flags &= ~IO_ASYNCH_REPLY;
                 }
                 // Unexpected exception => report
@@ -193,7 +210,8 @@ void app_main(void) {
                 G_io_apdu_buffer[tx + 1] = sw;
                 tx += 2;
             }
-            FINALLY {
+            FINALLY
+            {
             }
         }
         END_TRY;
@@ -204,11 +222,13 @@ void app_main(void) {
 }
 
 // override point, but nothing more to do
-void io_seproxyhal_display(const bagl_element_t* element) {
-    io_seproxyhal_display_default((bagl_element_t*)element);
+void io_seproxyhal_display(const bagl_element_t *element)
+{
+    io_seproxyhal_display_default((bagl_element_t *)element);
 }
 
-unsigned char io_event(unsigned char channel) {
+unsigned char io_event(unsigned char channel)
+{
     // unsigned int s_before;
     // unsigned int s_after;
 
@@ -217,7 +237,8 @@ unsigned char io_event(unsigned char channel) {
     // needed
 
     // can't have more than one tag in the reply, not supported yet.
-    switch (G_io_seproxyhal_spi_buffer[0]) {
+    switch (G_io_seproxyhal_spi_buffer[0])
+    {
     case SEPROXYHAL_TAG_FINGER_EVENT:
         UX_FINGER_EVENT(G_io_seproxyhal_spi_buffer);
         break;
@@ -227,7 +248,8 @@ unsigned char io_event(unsigned char channel) {
         break;
 
     case SEPROXYHAL_TAG_STATUS_EVENT:
-        if (G_io_apdu_media == IO_APDU_MEDIA_USB_HID && !(U4BE(G_io_seproxyhal_spi_buffer, 3) & SEPROXYHAL_TAG_STATUS_EVENT_FLAG_USB_POWERED)) {
+        if (G_io_apdu_media == IO_APDU_MEDIA_USB_HID && !(U4BE(G_io_seproxyhal_spi_buffer, 3) & SEPROXYHAL_TAG_STATUS_EVENT_FLAG_USB_POWERED))
+        {
             THROW(EXCEPTION_IO_RESET);
         }
         // no break is intentional
@@ -241,23 +263,26 @@ unsigned char io_event(unsigned char channel) {
 
     case SEPROXYHAL_TAG_TICKER_EVENT:
         UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer,
-            {
+                        {
 #ifndef TARGET_NANOX
-                if (UX_ALLOWED) {
-                    if (ux_step_count) {
-                        // prepare next screen
-                        ux_step = (ux_step + 1) % ux_step_count;
-                        // redisplay screen
-                        UX_REDISPLAY();
-                        }
-                    }
-    #endif // TARGET_NANOX
-            });
+                            if (UX_ALLOWED)
+                            {
+                                if (ux_step_count)
+                                {
+                                    // prepare next screen
+                                    ux_step = (ux_step + 1) % ux_step_count;
+                                    // redisplay screen
+                                    UX_REDISPLAY();
+                                }
+                            }
+#endif // TARGET_NANOX
+                        });
         break;
     }
 
     // close the event if not done previously (by a display or whatever)
-    if (!io_seproxyhal_spi_is_status_sent()) {
+    if (!io_seproxyhal_spi_is_status_sent())
+    {
         io_seproxyhal_general_status();
     }
 
@@ -277,26 +302,30 @@ unsigned char io_event(unsigned char channel) {
     return 1;
 }
 
-
-unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
-    switch (channel & ~(IO_FLAGS)) {
+unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len)
+{
+    switch (channel & ~(IO_FLAGS))
+    {
     case CHANNEL_KEYBOARD:
         break;
 
         // multiplexed io exchange over a SPI channel and TLV encapsulated protocol
     case CHANNEL_SPI:
-        if (tx_len) {
+        if (tx_len)
+        {
             io_seproxyhal_spi_send(G_io_apdu_buffer, tx_len);
 
-            if (channel & IO_RESET_AFTER_REPLIED) {
+            if (channel & IO_RESET_AFTER_REPLIED)
+            {
                 reset();
             }
             return 0; // nothing received from the master so far (it's a tx
-                    // transaction)
+                      // transaction)
         }
-        else {
+        else
+        {
             return io_seproxyhal_spi_recv(G_io_apdu_buffer,
-                sizeof(G_io_apdu_buffer), 0);
+                                          sizeof(G_io_apdu_buffer), 0);
         }
 
     default:
@@ -305,29 +334,33 @@ unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
     return 0;
 }
 
+void app_exit(void)
+{
 
-void app_exit(void) {
-
-    BEGIN_TRY_L(exit) {
-        TRY_L(exit) {
+    BEGIN_TRY_L(exit)
+    {
+        TRY_L(exit)
+        {
             os_sched_exit(-1);
         }
-        FINALLY_L(exit) {
-
+        FINALLY_L(exit)
+        {
         }
     }
     END_TRY_L(exit);
 }
 
-void nv_app_state_init() {
-    if (N_storage.initialized != 0x01) {
+void nv_app_state_init()
+{
+    if (N_storage.initialized != 0x01)
+    {
         internalStorage_t storage;
         storage.setting_1 = 0x00;
         storage.setting_2 = 0x00;
         storage.setting_3 = 0x00;
         storage.setting_4 = 0x00;
         storage.initialized = 0x01;
-        nvm_write((internalStorage_t*)&N_storage, (void*)&storage, sizeof(internalStorage_t));
+        nvm_write((internalStorage_t *)&N_storage, (void *)&storage, sizeof(internalStorage_t));
     }
     setting_1 = N_storage.setting_1;
     setting_2 = N_storage.setting_2;
@@ -336,18 +369,22 @@ void nv_app_state_init() {
     incognito_init_private_key();
 }
 
-__attribute__((section(".boot"))) int main(void) {
+__attribute__((section(".boot"))) int main(void)
+{
     // exit critical section
     __asm volatile("cpsie i");
 
     // ensure exception will work as planned
     os_boot();
 
-    for (;;) {
+    for (;;)
+    {
         UX_INIT();
 
-        BEGIN_TRY{
-            TRY {
+        BEGIN_TRY
+        {
+            TRY
+            {
                 io_seproxyhal_init();
 
                 nv_app_state_init();
@@ -363,14 +400,17 @@ __attribute__((section(".boot"))) int main(void) {
 #endif // HAVE_BLE
                 app_main();
             }
-            CATCH(EXCEPTION_IO_RESET) {
+            CATCH(EXCEPTION_IO_RESET)
+            {
                 // reset IO and UX before continuing
                 continue;
             }
-            CATCH_ALL {
+            CATCH_ALL
+            {
                 break;
             }
-            FINALLY {
+            FINALLY
+            {
             }
         }
         END_TRY;

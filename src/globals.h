@@ -24,21 +24,20 @@ extern unsigned char processData[300];
 extern unsigned char trust_host;
 
 typedef struct internalStorage_t
-    {
+{
     unsigned char setting_1;
     unsigned char setting_2;
     unsigned char setting_3;
     unsigned char setting_4;
 
-
     uint8_t initialized;
-    } internalStorage_t;
-
+} internalStorage_t;
 
 extern const internalStorage_t N_storage_real;
 #define N_storage (*(volatile internalStorage_t *)PIC(&N_storage_real))
 
-struct crypto_state_s {
+struct crypto_state_s
+{
     uint8_t isHDGen;
     privatekey_t key;
 
@@ -68,7 +67,7 @@ struct crypto_state_s {
 
     cx_sha256_t sha256_commitment;
     unsigned char C[32];
-    };
+};
 
 typedef struct crypto_state_s crypto_state_t;
 

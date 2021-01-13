@@ -22,9 +22,9 @@
 #include "globals.h"
 #include "crypto.h"
 
- /* ----------------------------------------------------------------------- */
- /* ---                                                                 --- */
- /* ----------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------- */
+/* ---                                                                 --- */
+/* ----------------------------------------------------------------------- */
 static unsigned char const WIDE C_ED25519_G[] = {
     // uncompressed
     0x04,
@@ -33,31 +33,32 @@ static unsigned char const WIDE C_ED25519_G[] = {
     0x69, 0x2c, 0xc7, 0x60, 0x95, 0x25, 0xa7, 0xb2, 0xc9, 0x56, 0x2d, 0x60, 0x8f, 0x25, 0xd5, 0x1a,
     // y
     0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66,
-    0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x58 };
+    0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x58};
 
 static unsigned char const WIDE C_ED25519_Hy[] = {
     0x8b, 0x65, 0x59, 0x70, 0x15, 0x37, 0x99, 0xaf, 0x2a, 0xea, 0xdc, 0x9f, 0xf1, 0xad, 0xd0, 0xea,
-    0x6c, 0x72, 0x51, 0xd5, 0x41, 0x54, 0xcf, 0xa9, 0x2c, 0x17, 0x3a, 0x0d, 0xd3, 0x9c, 0x1f, 0x94 };
+    0x6c, 0x72, 0x51, 0xd5, 0x41, 0x54, 0xcf, 0xa9, 0x2c, 0x17, 0x3a, 0x0d, 0xd3, 0x9c, 0x1f, 0x94};
 
 unsigned char const C_ED25519_ORDER[32] = {
     // l: 0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed
     0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x14, 0xDE, 0xF9, 0xDE, 0xA2, 0xF7, 0x9C, 0xD6, 0x58, 0x12, 0x63, 0x1A, 0x5C, 0xF5, 0xD3, 0xED };
+    0x14, 0xDE, 0xF9, 0xDE, 0xA2, 0xF7, 0x9C, 0xD6, 0x58, 0x12, 0x63, 0x1A, 0x5C, 0xF5, 0xD3, 0xED};
 
 unsigned char const C_ED25519_FIELD[32] = {
     // q:  0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffed
     0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xed };
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xed};
 
-unsigned char const C_EIGHT[32] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+unsigned char const C_EIGHT[32] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08 };
+                                   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08};
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_aes_derive(cx_aes_key_t* sk, unsigned char* seed32, unsigned char* a,
-    unsigned char* b) {
+void incognito_aes_derive(cx_aes_key_t *sk, unsigned char *seed32, unsigned char *a,
+                          unsigned char *b)
+{
     unsigned char h1[32];
 
     incognito_keccak_init_H();
@@ -74,7 +75,8 @@ void incognito_aes_derive(cx_aes_key_t* sk, unsigned char* seed32, unsigned char
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_aes_generate(cx_aes_key_t* sk) {
+void incognito_aes_generate(cx_aes_key_t *sk)
+{
     unsigned char h1[16];
     cx_rng(h1, 16);
     cx_aes_init_key(h1, 16, sk);
@@ -83,11 +85,14 @@ void incognito_aes_generate(cx_aes_key_t* sk) {
 /* ----------------------------------------------------------------------- */
 /* --- assert: max_len>0                                               --- */
 /* ----------------------------------------------------------------------- */
-unsigned int incognito_encode_varint(unsigned char* varint, unsigned int max_len, uint64_t value) {
+unsigned int incognito_encode_varint(unsigned char *varint, unsigned int max_len, uint64_t value)
+{
     unsigned int len;
     len = 0;
-    while (value >= 0x80) {
-        if (len == (max_len - 1)) {
+    while (value >= 0x80)
+    {
+        if (len == (max_len - 1))
+        {
             THROW(SW_WRONG_DATA_RANGE);
         }
         varint[len] = (value & 0x7F) | 0x80;
@@ -101,13 +106,16 @@ unsigned int incognito_encode_varint(unsigned char* varint, unsigned int max_len
 /* ----------------------------------------------------------------------- */
 /* --- assert: max_len>0                                               --- */
 /* ----------------------------------------------------------------------- */
-unsigned int incognito_decode_varint(unsigned char* varint, unsigned int max_len, uint64_t* value) {
+unsigned int incognito_decode_varint(unsigned char *varint, unsigned int max_len, uint64_t *value)
+{
     uint64_t v;
     unsigned int len;
     v = 0;
     len = 0;
-    while ((varint[len]) & 0x80) {
-        if (len == (max_len - 1)) {
+    while ((varint[len]) & 0x80)
+    {
+        if (len == (max_len - 1))
+        {
             THROW(SW_WRONG_DATA_RANGE);
         }
         v = v + ((uint64_t)((varint[len]) & 0x7f) << (len * 7));
@@ -122,10 +130,12 @@ unsigned int incognito_decode_varint(unsigned char* varint, unsigned int max_len
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_reverse32(unsigned char* rscal, unsigned char* scal) {
+void incognito_reverse32(unsigned char *rscal, unsigned char *scal)
+{
     unsigned char x;
     unsigned int i;
-    for (i = 0; i < 16; i++) {
+    for (i = 0; i < 16; i++)
+    {
         x = scal[i];
         rscal[i] = scal[31 - i];
         rscal[31 - i] = x;
@@ -135,40 +145,46 @@ void incognito_reverse32(unsigned char* rscal, unsigned char* scal) {
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_hash_init_sha256(cx_hash_t* hasher) { cx_sha256_init((cx_sha256_t*)hasher); }
+void incognito_hash_init_sha256(cx_hash_t *hasher) { cx_sha256_init((cx_sha256_t *)hasher); }
 
-void incognito_hash_init_keccak(cx_hash_t* hasher) { cx_keccak_init((cx_sha3_t*)hasher, 256); }
+void incognito_hash_init_keccak(cx_hash_t *hasher) { cx_keccak_init((cx_sha3_t *)hasher, 256); }
 
-void incognito_hash_init_sha3(cx_hash_t* hasher) { cx_sha3_init((cx_sha3_t*)hasher, 256); }
+void incognito_hash_init_sha3(cx_hash_t *hasher) { cx_sha3_init((cx_sha3_t *)hasher, 256); }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_hash_update(cx_hash_t* hasher, unsigned char* buf, unsigned int len) {
+void incognito_hash_update(cx_hash_t *hasher, unsigned char *buf, unsigned int len)
+{
     cx_hash(hasher, 0, buf, len, NULL, 0);
 }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-int incognito_hash_final(cx_hash_t* hasher, unsigned char* out) {
+int incognito_hash_final(cx_hash_t *hasher, unsigned char *out)
+{
     return cx_hash(hasher, CX_LAST, NULL, 0, out, 32);
 }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-int incognito_hash(unsigned int algo, cx_hash_t* hasher, unsigned char* buf, unsigned int len,
-    unsigned char* out) {
+int incognito_hash(unsigned int algo, cx_hash_t *hasher, unsigned char *buf, unsigned int len,
+                   unsigned char *out)
+{
     hasher->algo = algo;
-    if (algo == CX_SHA256) {
-        cx_sha256_init((cx_sha256_t*)hasher);
+    if (algo == CX_SHA256)
+    {
+        cx_sha256_init((cx_sha256_t *)hasher);
     }
-    if (algo == CX_SHA3) {
-        cx_sha3_init((cx_sha3_t*)hasher, 256);
+    if (algo == CX_SHA3)
+    {
+        cx_sha3_init((cx_sha3_t *)hasher, 256);
     }
-    else {
-        cx_keccak_init((cx_sha3_t*)hasher, 256);
+    else
+    {
+        cx_keccak_init((cx_sha3_t *)hasher, 256);
     }
     return cx_hash(hasher, CX_LAST, buf, len, out, 32);
 }
@@ -226,33 +242,33 @@ int incognito_hash(unsigned int algo, cx_hash_t* hasher, unsigned char* buf, uns
  *  fe_mul(r->X, r->X, r->Z);
  */
 
- // A = 486662
+// A = 486662
 const unsigned char C_fe_ma2[] = {
     /* -A^2
      *  0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffc8db3de3c9
      */
     0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xc8, 0xdb, 0x3d, 0xe3, 0xc9 };
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xc8, 0xdb, 0x3d, 0xe3, 0xc9};
 
 const unsigned char C_fe_ma[] = {
     /* -A
      *  0x7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff892e7
      */
     0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xf8, 0x92, 0xe7 };
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xf8, 0x92, 0xe7};
 const unsigned char C_fe_fffb1[] = {
 
     /* sqrt(-2 * A * (A + 2))
      * 0x7e71fbefdad61b1720a9c53741fb19e3d19404a8b92a738d22a76975321c41ee
      */
     0x7e, 0x71, 0xfb, 0xef, 0xda, 0xd6, 0x1b, 0x17, 0x20, 0xa9, 0xc5, 0x37, 0x41, 0xfb, 0x19, 0xe3,
-    0xd1, 0x94, 0x04, 0xa8, 0xb9, 0x2a, 0x73, 0x8d, 0x22, 0xa7, 0x69, 0x75, 0x32, 0x1c, 0x41, 0xee };
+    0xd1, 0x94, 0x04, 0xa8, 0xb9, 0x2a, 0x73, 0x8d, 0x22, 0xa7, 0x69, 0x75, 0x32, 0x1c, 0x41, 0xee};
 const unsigned char C_fe_fffb2[] = {
     /* sqrt(2 * A * (A + 2))
      * 0x4d061e0a045a2cf691d451b7c0165fbe51de03460456f7dfd2de6483607c9ae0
      */
     0x4d, 0x06, 0x1e, 0x0a, 0x04, 0x5a, 0x2c, 0xf6, 0x91, 0xd4, 0x51, 0xb7, 0xc0, 0x16, 0x5f, 0xbe,
-    0x51, 0xde, 0x03, 0x46, 0x04, 0x56, 0xf7, 0xdf, 0xd2, 0xde, 0x64, 0x83, 0x60, 0x7c, 0x9a, 0xe0 };
+    0x51, 0xde, 0x03, 0x46, 0x04, 0x56, 0xf7, 0xdf, 0xd2, 0xde, 0x64, 0x83, 0x60, 0x7c, 0x9a, 0xe0};
 const unsigned char C_fe_fffb3[] = {
     /* sqrt(-sqrt(-1) * A * (A + 2))
      * 674a110d14c208efb89546403f0da2ed4024ff4ea5964229581b7d8717302c66
@@ -276,13 +292,14 @@ const unsigned char C_fe_sqrtm1[] = {
      * 0x2b8324804fc1df0b2b4d00993dfbd7a72f431806ad2fe478c4ee1b274a0ea0b0
      */
     0x2b, 0x83, 0x24, 0x80, 0x4f, 0xc1, 0xdf, 0x0b, 0x2b, 0x4d, 0x00, 0x99, 0x3d, 0xfb, 0xd7, 0xa7,
-    0x2f, 0x43, 0x18, 0x06, 0xad, 0x2f, 0xe4, 0x78, 0xc4, 0xee, 0x1b, 0x27, 0x4a, 0x0e, 0xa0, 0xb0 };
+    0x2f, 0x43, 0x18, 0x06, 0xad, 0x2f, 0xe4, 0x78, 0xc4, 0xee, 0x1b, 0x27, 0x4a, 0x0e, 0xa0, 0xb0};
 const unsigned char C_fe_qm5div8[] = {
     0x0f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfd };
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfd};
 
-void incognito_ge_fromfe_frombytes(unsigned char* ge, unsigned char* bytes) {
-#define MOD              (unsigned char *)C_ED25519_FIELD, 32
+void incognito_ge_fromfe_frombytes(unsigned char *ge, unsigned char *bytes)
+{
+#define MOD (unsigned char *)C_ED25519_FIELD, 32
 #define fe_isnegative(f) (f[31] & 1)
 #if 0
     unsigned char u[32], v[32], w[32], x[32], y[32], z[32];
@@ -297,25 +314,27 @@ void incognito_ge_fromfe_frombytes(unsigned char* ge, unsigned char* bytes) {
     } uv;
 
 #define uv7 uv._uv7
-#define v3  uv._v3
+#define v3 uv._v3
 
 #define Pxy uv._Pxy
 #else
-#define u  (processData + 0 * 32)
-#define v  (processData + 1 * 32)
-#define w  (processData + 2 * 32)
-#define x  (processData + 3 * 32)
-#define y  (processData + 4 * 32)
-#define z  (processData + 5 * 32)
+#define u (processData + 0 * 32)
+#define v (processData + 1 * 32)
+#define w (processData + 2 * 32)
+#define x (processData + 3 * 32)
+#define y (processData + 4 * 32)
+#define z (processData + 5 * 32)
 #define rX (processData + 6 * 32)
 #define rY (processData + 7 * 32)
 #define rZ (processData + 8 * 32)
 
     //#define uv7 (G_incognito_vstate.io_buffer+9*32)
     //#define v3  (G_incognito_vstate.io_buffer+10*32)
-    union {
+    union
+    {
         unsigned char _Pxy[65];
-        struct {
+        struct
+        {
             unsigned char _uv7[32];
             unsigned char _v3[32];
         };
@@ -323,7 +342,7 @@ void incognito_ge_fromfe_frombytes(unsigned char* ge, unsigned char* bytes) {
     } uv;
 
 #define uv7 uv._uv7
-#define v3  uv._v3
+#define v3 uv._v3
 
 #define Pxy uv._Pxy
 
@@ -336,7 +355,7 @@ void incognito_ge_fromfe_frombytes(unsigned char* ge, unsigned char* bytes) {
 
     // cx works in BE
     incognito_reverse32(u, bytes);
-    cx_math_modm(u, 32, (unsigned char*)C_ED25519_FIELD, 32);
+    cx_math_modm(u, 32, (unsigned char *)C_ED25519_FIELD, 32);
 
     // go on
     cx_math_multm(v, u, u, MOD); /* 2 * u^2 */
@@ -346,7 +365,7 @@ void incognito_ge_fromfe_frombytes(unsigned char* ge, unsigned char* bytes) {
     w[31] = 1;                                           /* w = 1 */
     cx_math_addm(w, v, w, MOD);                          /* w = 2 * u^2 + 1 */
     cx_math_multm(x, w, w, MOD);                         /* w^2 */
-    cx_math_multm(y, (unsigned char*)C_fe_ma2, v, MOD); /* -2 * A^2 * u^2 */
+    cx_math_multm(y, (unsigned char *)C_fe_ma2, v, MOD); /* -2 * A^2 * u^2 */
     cx_math_addm(x, x, y, MOD);                          /* x = w^2 - 2 * A^2 * u^2 */
 
 // inline fe_divpowm1(r->X, w, x);     // (w / x)^(m + 1) => fe_divpowm1(r,u,v)
@@ -357,7 +376,7 @@ void incognito_ge_fromfe_frombytes(unsigned char* ge, unsigned char* bytes) {
     cx_math_multm(uv7, v3, v3, MOD);
     cx_math_multm(uv7, uv7, _v, MOD);
     cx_math_multm(uv7, uv7, _u, MOD);                               /* uv7 = uv^7 */
-    cx_math_powm(uv7, uv7, (unsigned char*)C_fe_qm5div8, 32, MOD); /* (uv^7)^((q-5)/8)*/
+    cx_math_powm(uv7, uv7, (unsigned char *)C_fe_qm5div8, 32, MOD); /* (uv^7)^((q-5)/8)*/
     cx_math_multm(uv7, uv7, v3, MOD);
     cx_math_multm(rX, uv7, w, MOD); /* u^(m+1)v^(-(m+1)) */
 #undef _u
@@ -368,42 +387,49 @@ void incognito_ge_fromfe_frombytes(unsigned char* ge, unsigned char* bytes) {
     cx_math_subm(y, w, x, MOD);
     os_memmove(z, C_fe_ma, 32);
 
-    if (!cx_math_is_zero(y, 32)) {
+    if (!cx_math_is_zero(y, 32))
+    {
         cx_math_addm(y, w, x, MOD);
-        if (!cx_math_is_zero(y, 32)) {
+        if (!cx_math_is_zero(y, 32))
+        {
             goto negative;
         }
-        else {
-            cx_math_multm(rX, rX, (unsigned char*)C_fe_fffb1, MOD);
+        else
+        {
+            cx_math_multm(rX, rX, (unsigned char *)C_fe_fffb1, MOD);
         }
     }
-    else {
-        cx_math_multm(rX, rX, (unsigned char*)C_fe_fffb2, MOD);
+    else
+    {
+        cx_math_multm(rX, rX, (unsigned char *)C_fe_fffb2, MOD);
     }
-    cx_math_multm(rX, rX, u, MOD);  // u * sqrt(2 * A * (A + 2) * w / x)
-    cx_math_multm(z, z, v, MOD);    // -2 * A * u^2
+    cx_math_multm(rX, rX, u, MOD); // u * sqrt(2 * A * (A + 2) * w / x)
+    cx_math_multm(z, z, v, MOD);   // -2 * A * u^2
     sign = 0;
 
     goto setsign;
 
 negative:
-    cx_math_multm(x, x, (unsigned char*)C_fe_sqrtm1, MOD);
+    cx_math_multm(x, x, (unsigned char *)C_fe_sqrtm1, MOD);
     cx_math_subm(y, w, x, MOD);
-    if (!cx_math_is_zero(y, 32)) {
+    if (!cx_math_is_zero(y, 32))
+    {
         cx_math_addm(y, w, x, MOD);
-        cx_math_multm(rX, rX, (unsigned char*)C_fe_fffb3, MOD);
+        cx_math_multm(rX, rX, (unsigned char *)C_fe_fffb3, MOD);
     }
-    else {
-        cx_math_multm(rX, rX, (unsigned char*)C_fe_fffb4, MOD);
+    else
+    {
+        cx_math_multm(rX, rX, (unsigned char *)C_fe_fffb4, MOD);
     }
     // r->X = sqrt(A * (A + 2) * w / x)
     // z = -A
     sign = 1;
 
 setsign:
-    if (fe_isnegative(rX) != sign) {
+    if (fe_isnegative(rX) != sign)
+    {
         // fe_neg(r->X, r->X);
-        cx_math_sub(rX, (unsigned char*)C_ED25519_FIELD, rX, 32);
+        cx_math_sub(rX, (unsigned char *)C_ED25519_FIELD, rX, 32);
     }
     cx_math_addm(rZ, z, w, MOD);
     cx_math_subm(rY, z, w, MOD);
@@ -440,16 +466,17 @@ setsign:
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_hash_to_scalar(unsigned char* scalar, unsigned char* raw, unsigned int raw_len) {
+void incognito_hash_to_scalar(unsigned char *scalar, unsigned char *raw, unsigned int raw_len)
+{
     incognito_keccak_F(raw, raw_len, scalar);
     incognito_reduce(scalar, scalar);
 }
 
-
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_hash_to_point(unsigned char* ec, unsigned char* ec_pub) {
+void incognito_hash_to_point(unsigned char *ec, unsigned char *ec_pub)
+{
     unsigned char keyhash[32];
     incognito_keccak_F(ec_pub, 32, keyhash);
     incognito_hash_to_ec(ec, keyhash);
@@ -458,7 +485,8 @@ void incognito_hash_to_point(unsigned char* ec, unsigned char* ec_pub) {
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_hash_to_ec(unsigned char* ec, unsigned char* ec_pub) {
+void incognito_hash_to_ec(unsigned char *ec, unsigned char *ec_pub)
+{
     incognito_keccak_F(ec_pub, 32, ec);
     incognito_ge_fromfe_frombytes(ec, ec);
     incognito_ecmul_8(ec, ec);
@@ -467,7 +495,8 @@ void incognito_hash_to_ec(unsigned char* ec, unsigned char* ec_pub) {
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_generate_keypair(unsigned char* ec_pub, unsigned char* ec_priv) {
+void incognito_generate_keypair(unsigned char *ec_pub, unsigned char *ec_priv)
+{
     incognito_rng_mod_order(ec_priv);
     incognito_ecmul_G(ec_pub, ec_priv);
 }
@@ -475,16 +504,18 @@ void incognito_generate_keypair(unsigned char* ec_pub, unsigned char* ec_priv) {
 /* ----------------------------------------------------------------------- */
 /* --- ok                                                              --- */
 /* ----------------------------------------------------------------------- */
-void incognito_generate_key_derivation(unsigned char* drv_data, unsigned char* P,
-    unsigned char* scalar) {
+void incognito_generate_key_derivation(unsigned char *drv_data, unsigned char *P,
+                                       unsigned char *scalar)
+{
     incognito_ecmul_8k(drv_data, P, scalar);
 }
 
 /* ----------------------------------------------------------------------- */
 /* ---  ok                                                             --- */
 /* ----------------------------------------------------------------------- */
-void incognito_derivation_to_scalar(unsigned char* scalar, unsigned char* drv_data,
-    unsigned int out_idx) {
+void incognito_derivation_to_scalar(unsigned char *scalar, unsigned char *drv_data,
+                                    unsigned int out_idx)
+{
     unsigned char varint[32 + 8];
     unsigned int len_varint;
 
@@ -498,8 +529,9 @@ void incognito_derivation_to_scalar(unsigned char* scalar, unsigned char* drv_da
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_derive_secret_key(unsigned char* x, unsigned char* drv_data, unsigned int out_idx,
-    unsigned char* ec_priv) {
+void incognito_derive_secret_key(unsigned char *x, unsigned char *drv_data, unsigned int out_idx,
+                                 unsigned char *ec_priv)
+{
     unsigned char tmp[32];
 
     // derivation to scalar
@@ -512,8 +544,9 @@ void incognito_derive_secret_key(unsigned char* x, unsigned char* drv_data, unsi
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_derive_public_key(unsigned char* x, unsigned char* drv_data, unsigned int out_idx,
-    unsigned char* ec_pub) {
+void incognito_derive_public_key(unsigned char *x, unsigned char *drv_data, unsigned int out_idx,
+                                 unsigned char *ec_pub)
+{
     unsigned char tmp[32];
 
     // derivation to scalar
@@ -526,14 +559,16 @@ void incognito_derive_public_key(unsigned char* x, unsigned char* drv_data, unsi
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_secret_key_to_public_key(unsigned char* ec_pub, unsigned char* ec_priv) {
+void incognito_secret_key_to_public_key(unsigned char *ec_pub, unsigned char *ec_priv)
+{
     incognito_ecmul_G(ec_pub, ec_priv);
 }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_generate_key_image(unsigned char* img, unsigned char* P, unsigned char* x) {
+void incognito_generate_key_image(unsigned char *img, unsigned char *P, unsigned char *x)
+{
     unsigned char I[32];
     incognito_hash_to_point(I, P);
     incognito_ecmul_k(img, I, x);
@@ -546,8 +581,9 @@ void incognito_generate_key_image(unsigned char* img, unsigned char* P, unsigned
 /* ----------------------------------------------------------------------- */
 /* --- ok                                                              --- */
 /* ----------------------------------------------------------------------- */
-void incognito_derive_subaddress_public_key(unsigned char* x, unsigned char* pub,
-    unsigned char* drv_data, unsigned int index) {
+void incognito_derive_subaddress_public_key(unsigned char *x, unsigned char *pub,
+                                            unsigned char *drv_data, unsigned int index)
+{
     unsigned char scalarG[32];
 
     incognito_derivation_to_scalar(scalarG, drv_data, index);
@@ -558,7 +594,8 @@ void incognito_derive_subaddress_public_key(unsigned char* x, unsigned char* pub
 /* ----------------------------------------------------------------------- */
 /* --- ok                                                              --- */
 /* ----------------------------------------------------------------------- */
-void incognito_get_subaddress_spend_public_key(unsigned char* x, unsigned char* index) {
+void incognito_get_subaddress_spend_public_key(unsigned char *x, unsigned char *index)
+{
     // m = Hs(a || index_major || index_minor)
     incognito_get_subaddress_secret_key(x, G_crypto_state_t.a, index);
     // M = m*G
@@ -570,7 +607,8 @@ void incognito_get_subaddress_spend_public_key(unsigned char* x, unsigned char* 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_get_subaddress(unsigned char* C, unsigned char* D, unsigned char* index) {
+void incognito_get_subaddress(unsigned char *C, unsigned char *D, unsigned char *index)
+{
     // retrieve D
     incognito_get_subaddress_spend_public_key(D, index);
     // C = a*D
@@ -580,9 +618,10 @@ void incognito_get_subaddress(unsigned char* C, unsigned char* D, unsigned char*
 /* ----------------------------------------------------------------------- */
 /* --- ok                                                              --- */
 /* ----------------------------------------------------------------------- */
-static const char C_sub_address_prefix[] = { 'S', 'u', 'b', 'A', 'd', 'd', 'r', 0 };
+static const char C_sub_address_prefix[] = {'S', 'u', 'b', 'A', 'd', 'd', 'r', 0};
 
-void incognito_get_subaddress_secret_key(unsigned char* sub_s, unsigned char* s, unsigned char* index) {
+void incognito_get_subaddress_secret_key(unsigned char *sub_s, unsigned char *s, unsigned char *index)
+{
     unsigned char in[sizeof(C_sub_address_prefix) + 32 + 8];
 
     os_memmove(in, C_sub_address_prefix, sizeof(C_sub_address_prefix)),
@@ -600,10 +639,12 @@ void incognito_get_subaddress_secret_key(unsigned char* sub_s, unsigned char* s,
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_check_scalar_range_1N(unsigned char* s) {
+void incognito_check_scalar_range_1N(unsigned char *s)
+{
     unsigned char x[32];
     incognito_reverse32(x, s);
-    if (cx_math_is_zero(x, 32) || cx_math_cmp(x, C_ED25519_ORDER, 32) >= 0) {
+    if (cx_math_is_zero(x, 32) || cx_math_cmp(x, C_ED25519_ORDER, 32) >= 0)
+    {
         THROW(SW_WRONG_DATA_RANGE);
     }
 }
@@ -611,15 +652,18 @@ void incognito_check_scalar_range_1N(unsigned char* s) {
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_check_scalar_not_null(unsigned char* s) {
-    if (cx_math_is_zero(s, 32)) {
+void incognito_check_scalar_not_null(unsigned char *s)
+{
+    if (cx_math_is_zero(s, 32))
+    {
         THROW(SW_WRONG_DATA_RANGE);
     }
 }
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_ecmul_G(unsigned char* W, unsigned char* scalar32) {
+void incognito_ecmul_G(unsigned char *W, unsigned char *scalar32)
+{
     unsigned char Pxy[65];
     unsigned char s[32];
     incognito_reverse32(s, scalar32);
@@ -632,7 +676,8 @@ void incognito_ecmul_G(unsigned char* W, unsigned char* scalar32) {
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_ecmul_H(unsigned char* W, unsigned char* scalar32) {
+void incognito_ecmul_H(unsigned char *W, unsigned char *scalar32)
+{
     unsigned char Pxy[65];
     unsigned char s[32];
 
@@ -651,7 +696,8 @@ void incognito_ecmul_H(unsigned char* W, unsigned char* scalar32) {
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_ecmul_k(unsigned char* W, unsigned char* P, unsigned char* scalar32) {
+void incognito_ecmul_k(unsigned char *W, unsigned char *P, unsigned char *scalar32)
+{
     unsigned char Pxy[65];
     unsigned char s[32];
 
@@ -670,7 +716,8 @@ void incognito_ecmul_k(unsigned char* W, unsigned char* P, unsigned char* scalar
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_ecmul_8k(unsigned char* W, unsigned char* P, unsigned char* scalar32) {
+void incognito_ecmul_8k(unsigned char *W, unsigned char *P, unsigned char *scalar32)
+{
     unsigned char s[32];
     incognito_multm_8(s, scalar32);
     incognito_ecmul_k(W, P, s);
@@ -679,7 +726,8 @@ void incognito_ecmul_8k(unsigned char* W, unsigned char* P, unsigned char* scala
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_ecmul_8(unsigned char* W, unsigned char* P) {
+void incognito_ecmul_8(unsigned char *W, unsigned char *P)
+{
     unsigned char Pxy[65];
 
     Pxy[0] = 0x02;
@@ -695,7 +743,8 @@ void incognito_ecmul_8(unsigned char* W, unsigned char* P) {
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_ecadd(unsigned char* W, unsigned char* P, unsigned char* Q) {
+void incognito_ecadd(unsigned char *W, unsigned char *P, unsigned char *Q)
+{
     unsigned char Pxy[65];
     unsigned char Qxy[65];
 
@@ -716,7 +765,8 @@ void incognito_ecadd(unsigned char* W, unsigned char* P, unsigned char* Q) {
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_ecsub(unsigned char* W, unsigned char* P, unsigned char* Q) {
+void incognito_ecsub(unsigned char *W, unsigned char *P, unsigned char *Q)
+{
     unsigned char Pxy[65];
     unsigned char Qxy[65];
 
@@ -728,7 +778,7 @@ void incognito_ecsub(unsigned char* W, unsigned char* P, unsigned char* Q) {
     os_memmove(&Qxy[1], Q, 32);
     cx_edward_decompress_point(CX_CURVE_Ed25519, Qxy, sizeof(Qxy));
 
-    cx_math_sub(Qxy + 1, (unsigned char*)C_ED25519_FIELD, Qxy + 1, 32);
+    cx_math_sub(Qxy + 1, (unsigned char *)C_ED25519_FIELD, Qxy + 1, 32);
     cx_ecfp_add_point(CX_CURVE_Ed25519, Pxy, Pxy, Qxy, sizeof(Pxy));
 
     cx_edward_compress_point(CX_CURVE_Ed25519, Pxy, sizeof(Pxy));
@@ -749,7 +799,8 @@ void incognito_ecsub(unsigned char* W, unsigned char* P, unsigned char* Q) {
         return hash;
     }
 */
-void incognito_ecdhHash(unsigned char* x, unsigned char* k) {
+void incognito_ecdhHash(unsigned char *x, unsigned char *k)
+{
     unsigned char data[38];
     os_memmove(data, "amount", 6);
     os_memmove(data + 6, k, 32);
@@ -770,7 +821,8 @@ void incognito_ecdhHash(unsigned char* x, unsigned char* k) {
         return scalar;
     }
 */
-void incognito_genCommitmentMask(unsigned char* c, unsigned char* sk) {
+void incognito_genCommitmentMask(unsigned char *c, unsigned char *sk)
+{
     unsigned char data[15 + 32];
     os_memmove(data, "commitment_mask", 15);
     os_memmove(data + 15, sk, 32);
@@ -780,72 +832,78 @@ void incognito_genCommitmentMask(unsigned char* c, unsigned char* sk) {
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_addm(unsigned char* r, unsigned char* a, unsigned char* b) {
+void incognito_addm(unsigned char *r, unsigned char *a, unsigned char *b)
+{
     unsigned char ra[32];
     unsigned char rb[32];
 
     incognito_reverse32(ra, a);
     incognito_reverse32(rb, b);
-    cx_math_addm(r, ra, rb, (unsigned char*)C_ED25519_ORDER, 32);
+    cx_math_addm(r, ra, rb, (unsigned char *)C_ED25519_ORDER, 32);
     incognito_reverse32(r, r);
 }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_subm(unsigned char* r, unsigned char* a, unsigned char* b) {
+void incognito_subm(unsigned char *r, unsigned char *a, unsigned char *b)
+{
     unsigned char ra[32];
     unsigned char rb[32];
 
     incognito_reverse32(ra, a);
     incognito_reverse32(rb, b);
-    cx_math_subm(r, ra, rb, (unsigned char*)C_ED25519_ORDER, 32);
+    cx_math_subm(r, ra, rb, (unsigned char *)C_ED25519_ORDER, 32);
     incognito_reverse32(r, r);
 }
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_multm(unsigned char* r, unsigned char* a, unsigned char* b) {
+void incognito_multm(unsigned char *r, unsigned char *a, unsigned char *b)
+{
     unsigned char ra[32];
     unsigned char rb[32];
 
     incognito_reverse32(ra, a);
     incognito_reverse32(rb, b);
-    cx_math_multm(r, ra, rb, (unsigned char*)C_ED25519_ORDER, 32);
+    cx_math_multm(r, ra, rb, (unsigned char *)C_ED25519_ORDER, 32);
     incognito_reverse32(r, r);
 }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_multm_8(unsigned char* r, unsigned char* a) {
+void incognito_multm_8(unsigned char *r, unsigned char *a)
+{
     unsigned char ra[32];
     unsigned char rb[32];
 
     incognito_reverse32(ra, a);
     os_memset(rb, 0, 32);
     rb[31] = 8;
-    cx_math_multm(r, ra, rb, (unsigned char*)C_ED25519_ORDER, 32);
+    cx_math_multm(r, ra, rb, (unsigned char *)C_ED25519_ORDER, 32);
     incognito_reverse32(r, r);
 }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_reduce(unsigned char* r, unsigned char* a) {
+void incognito_reduce(unsigned char *r, unsigned char *a)
+{
     unsigned char ra[32];
     incognito_reverse32(ra, a);
-    cx_math_modm(ra, 32, (unsigned char*)C_ED25519_ORDER, 32);
+    cx_math_modm(ra, 32, (unsigned char *)C_ED25519_ORDER, 32);
     incognito_reverse32(r, ra);
 }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-void incognito_rng_mod_order(unsigned char* r) {
+void incognito_rng_mod_order(unsigned char *r)
+{
     unsigned char rnd[32 + 8];
     cx_rng(rnd, 32 + 8);
-    cx_math_modm(rnd, 32 + 8, (unsigned char*)C_ED25519_ORDER, 32);
+    cx_math_modm(rnd, 32 + 8, (unsigned char *)C_ED25519_ORDER, 32);
     incognito_reverse32(r, rnd + 8);
 }
 
@@ -853,20 +911,23 @@ void incognito_rng_mod_order(unsigned char* r) {
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
 /* return 0 if ok, 1 if missing decimal */
-void incognito_uint642str(uint64_t val, char* str, unsigned int str_len) {
+void incognito_uint642str(uint64_t val, char *str, unsigned int str_len)
+{
     char stramount[22];
     unsigned int offset, len;
 
     os_memset(str, 0, str_len);
 
     offset = 22;
-    while (val) {
+    while (val)
+    {
         offset--;
         stramount[offset] = '0' + val % 10;
         val = val / 10;
     }
     len = sizeof(stramount) - offset;
-    if (len > str_len) {
+    if (len > str_len)
+    {
         THROW(SW_WRONG_DATA_RANGE);
     }
     os_memmove(str, stramount + offset, len);
@@ -876,7 +937,8 @@ void incognito_uint642str(uint64_t val, char* str, unsigned int str_len) {
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
 /* return 0 if ok, 1 if missing decimal */
-int incognito_amount2str(uint64_t xmr, char* str, unsigned int str_len) {
+int incognito_amount2str(uint64_t xmr, char *str, unsigned int str_len)
+{
     // max uint64 is 18446744073709551616, aka 20 char, plus dot
     char stramount[22];
     unsigned int offset, len, ov;
@@ -886,7 +948,8 @@ int incognito_amount2str(uint64_t xmr, char* str, unsigned int str_len) {
     os_memset(stramount, '0', sizeof(stramount));
     stramount[21] = 0;
     // special case
-    if (xmr == 0) {
+    if (xmr == 0)
+    {
         str[0] = '0';
         return 1;
     }
@@ -897,7 +960,8 @@ int incognito_amount2str(uint64_t xmr, char* str, unsigned int str_len) {
     // value:  0 | xmrunits | 0
 
     offset = 20;
-    while (xmr) {
+    while (xmr)
+    {
         stramount[offset] = '0' + xmr % 10;
         xmr = xmr / 10;
         offset--;
@@ -908,19 +972,23 @@ int incognito_amount2str(uint64_t xmr, char* str, unsigned int str_len) {
     os_memmove(stramount, stramount + 1, 8);
     stramount[8] = '.';
     offset = 0;
-    while ((stramount[offset] == '0') && (stramount[offset] != '.')) {
+    while ((stramount[offset] == '0') && (stramount[offset] != '.'))
+    {
         offset++;
     }
-    if (stramount[offset] == '.') {
+    if (stramount[offset] == '.')
+    {
         offset--;
     }
     len = 20;
-    while ((stramount[len] == '0') && (stramount[len] != '.')) {
+    while ((stramount[len] == '0') && (stramount[len] != '.'))
+    {
         len--;
     }
     len = len - offset + 1;
     ov = 0;
-    if (len > (str_len - 1)) {
+    if (len > (str_len - 1))
+    {
         len = str_len - 1;
         ov = 1;
     }
@@ -931,11 +999,13 @@ int incognito_amount2str(uint64_t xmr, char* str, unsigned int str_len) {
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-uint64_t incognito_bamount2uint64(unsigned char* binary) {
+uint64_t incognito_bamount2uint64(unsigned char *binary)
+{
     uint64_t xmr;
     int i;
     xmr = 0;
-    for (i = 7; i >= 0; i--) {
+    for (i = 7; i >= 0; i--)
+    {
         xmr = xmr * 256 + binary[i];
     }
     return xmr;
@@ -944,27 +1014,30 @@ uint64_t incognito_bamount2uint64(unsigned char* binary) {
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-int incognito_bamount2str(unsigned char* binary, char* str, unsigned int str_len) {
+int incognito_bamount2str(unsigned char *binary, char *str, unsigned int str_len)
+{
     return incognito_amount2str(incognito_bamount2uint64(binary), str, str_len);
 }
 
 /* ----------------------------------------------------------------------- */
 /* ---                                                                 --- */
 /* ----------------------------------------------------------------------- */
-int incognito_vamount2str(unsigned char* binary, char* str, unsigned int str_len) {
+int incognito_vamount2str(unsigned char *binary, char *str, unsigned int str_len)
+{
     // return incognito_amount2str(incognito_vamount2uint64(binary), str,str_len);
     uint64_t amount;
     incognito_decode_varint(binary, 8, &amount);
     return incognito_amount2str(amount, str, str_len);
 }
 
-
-void incognito_doublesha256(unsigned char* buf, unsigned int len, unsigned char* out) {
+void incognito_doublesha256(unsigned char *buf, unsigned int len, unsigned char *out)
+{
     cx_hash_sha256(buf, len, out, 32);
     cx_hash_sha256(out, 32, out, 32);
 }
 
-void incognito_add_B58checksum(unsigned char* preEncode, unsigned int len, unsigned char* buf) {
+void incognito_add_B58checksum(unsigned char *preEncode, unsigned int len, unsigned char *buf)
+{
     incognito_sha3(preEncode, len, buf);
     os_memmove(preEncode + len, buf, 4);
 }
