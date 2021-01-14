@@ -10,8 +10,9 @@ import (
 )
 
 type CoinData struct {
-	coin     *coin.CoinV2
-	KeyImage []byte
+	coin              *coin.CoinV2
+	KeyImageEncrypted []byte
+	KeyImageDecrypted []byte
 }
 
 func DecryptCoinsV2(coinList []*coin.CoinV2, viewKey key.ViewingKey, OTAKey key.OTAKey) error {
@@ -73,5 +74,27 @@ func GetKeyImageOfCoins(coinList []*coin.CoinV2, OTAKey key.OTAKey) error {
 
 		//send to ledger to continue
 	}
+	return nil
+}
+
+func EncryptCoinV2() {
+
+}
+
+// NewCoinV2ArrayFromPaymentInfoArray
+func GenCoinCommitment() {
+
+}
+func GenCoinOTA() {
+
+}
+
+///////////////////////
+
+func GenAssetTag() {
+
+}
+
+func concealInOutputCoins(inputCoins []*coin.CoinV2, outputCoins []*coin.CoinV2) error {
 	return nil
 }

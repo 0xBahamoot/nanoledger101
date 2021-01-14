@@ -12,13 +12,26 @@ func startService() {
 	http.HandleFunc("/getbalance", getBalanceHandler)
 	http.HandleFunc("/importkey", importKeyHandler)
 	http.HandleFunc("/getcoinstodecrypt", getCoinsHandler)
+	http.HandleFunc("/getdaemonstate", getStateHandler)
+	http.HandleFunc("/createtx", createTxHandler)
+	http.HandleFunc("/cancelAllTxs", cancelAllTxsHandler)
 	err := http.ListenAndServe("127.0.0.1:9000", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
 }
 
+func getStateHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	return
+}
+
 func importKeyHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	return
 }
 func getCoinsHandler(w http.ResponseWriter, r *http.Request) {
@@ -65,4 +78,17 @@ func getBalanceHandler(w http.ResponseWriter, r *http.Request) {
 	// 	panic(err)
 	// }
 	return
+}
+
+func cancelAllTxsHandler(w http.ResponseWriter, r *http.Request) {
+
+	return
+}
+
+func createTxHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 }

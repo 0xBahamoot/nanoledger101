@@ -42,11 +42,11 @@ func loadAccountsFromDB() ([]*Account, error) {
 	return result, nil
 }
 
-func saveKeyImageList(keyImages map[string][]byte, paymentAddrHash string) error {
+func saveKeyImageList(keyImages map[string][]byte, tokenID string, paymentAddrHash string) error {
 	batch := keyimageDB.NewBatch()
 
 	for commitmentHash, keyImage := range keyImages {
-		key := fmt.Sprintf("km-%s-%s", paymentAddrHash, commitmentHash)
+		key := fmt.Sprintf("km-%s-%s-%s", tokenID, paymentAddrHash, commitmentHash)
 		err := batch.Put([]byte(key), keyImage)
 		if err != nil {
 			return err

@@ -12,6 +12,12 @@ type Account struct {
 	PaymentAddress key.PaymentAddress
 	Viewkey        key.ViewingKey
 	OTAKey         key.PrivateOTAKey
+
+	lock sync.RWMutex
+	//map[tokenID][]coinHash
+	PendingCoins   map[string][]string //wait for tx to confirm
+	AvaliableCoins map[string][]string //avaliable to use
+	EncryptedCoins map[string][]string //encrypted, dont know whether been used
 }
 
 type AccountState struct {
@@ -69,4 +75,12 @@ func getAllBalance() map[string]uint64 {
 	}
 	accountListLck.RUnlock()
 	return result
+}
+
+func updateAvaliableCoin(account *Account, keyimages []string) error {
+	return nil
+}
+
+func chooseCoinsForAccount(account *Account, amount int64, tokenID string) ([]string, error) {
+	return nil, nil
 }

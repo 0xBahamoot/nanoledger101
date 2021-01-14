@@ -20,9 +20,10 @@ var localnode interface {
 	GetBlockchain() *blockchain.BlockChain
 	OnNewBlockFromParticularHeight(chainID int, blkHeight int64, isFinalized bool, f func(bc *blockchain.BlockChain, h common.Hash, height uint64))
 }
-var CoinProcessedState map[byte]uint64
-var TransactionStateDB map[byte]*statedb.StateDB
+
 var stateLock sync.Mutex
+var ShardProcessedState map[byte]uint64
+var TransactionStateDB map[byte]*statedb.StateDB
 
 func OnNewShardBlock(bc *blockchain.BlockChain, h common.Hash, height uint64) {
 	var blk blockchain.ShardBlock
@@ -69,7 +70,7 @@ func OnNewShardBlock(bc *blockchain.BlockChain, h common.Hash, height uint64) {
 		panic(err)
 	}
 	stateLock.Lock()
-	CoinProcessedState[blk.Header.ShardID] = blk.Header.Height
+	ShardProcessedState[blk.Header.ShardID] = blk.Header.Height
 	stateLock.Unlock()
 	if (blk.Header.Height % 100) == 0 {
 		// fmt.Println("RestoreShardViews")
@@ -100,9 +101,9 @@ func GetCoins(keyset *incognitokey.KeySet, tokenID *common.Hash) ([]privacy.Plai
 }
 
 func initCoinService() {
-	CoinProcessedState = make(map[byte]uint64)
+	ShardProcessedState = make(map[byte]uint64)
 	TransactionStateDB = make(map[byte]*statedb.StateDB)
-	//load CoinProcessedState
+	//load ShardProcessedState
 	for i := 0; i < localnode.GetBlockchain().GetChainParams().ActiveShards; i++ {
 		statePrefix := fmt.Sprintf("coin-processed-%v", i)
 		v, err := localnode.GetUserDatabase().Get([]byte(statePrefix), nil)
@@ -115,15 +116,15 @@ func initCoinService() {
 				fmt.Println(err)
 				continue
 			}
-			CoinProcessedState[byte(i)] = height
+			ShardProcessedState[byte(i)] = height
 		} else {
-			CoinProcessedState[byte(i)] = 1
+			ShardProcessedState[byte(i)] = 1
 		}
 		TransactionStateDB[byte(i)] = localnode.GetBlockchain().GetBestStateShard(byte(i)).GetCopiedTransactionStateDB()
 		fmt.Println("TransactionStateDB[byte(i)]", byte(i), TransactionStateDB[byte(i)])
 	}
 	for i := 0; i < localnode.GetBlockchain().GetChainParams().ActiveShards; i++ {
-		localnode.OnNewBlockFromParticularHeight(i, int64(CoinProcessedState[byte(i)]), true, OnNewShardBlock)
+		localnode.OnNewBlockFromParticularHeight(i, int64(ShardProcessedState[byte(i)]), true, OnNewShardBlock)
 	}
 	go startService()
 }
